@@ -44,9 +44,7 @@ class Settings(BaseSettings):
     )
 
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
-    anthropic_api_key: SecretStr | None = Field(
-        default=None, validation_alias="ANTHROPIC_API_KEY"
-    )
+    anthropic_api_key: SecretStr | None = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
 
     wikivoyage_language: str = Field(
         default="en",

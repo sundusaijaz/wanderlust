@@ -76,8 +76,7 @@ def plan(
     """Plan a trip from a natural-language request. (Coming in v0.1.)"""
     console.print(f"[bold]Trip request:[/bold] {request}")
     console.print(
-        "[yellow]The planning agent is not built yet.[/yellow] "
-        "Follow progress in ROADMAP.md."
+        "[yellow]The planning agent is not built yet.[/yellow] Follow progress in ROADMAP.md."
     )
     raise typer.Exit(code=2)
 
