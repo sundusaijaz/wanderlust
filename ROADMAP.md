@@ -5,7 +5,7 @@ and lands through its own pull request.
 
 ## v0.1: a working planner in the terminal
 
-- [ ] **M1: Project foundation.** Package layout, configuration, CLI skeleton,
+- [x] **M1: Project foundation.** Package layout, configuration, CLI skeleton,
       tests and CI.
 - [ ] **M2: Wikivoyage client.** Fetch and parse destination articles through
       the MediaWiki API, split them by section (See, Do, Eat, Sleep, Get around),
