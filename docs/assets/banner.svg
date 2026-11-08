@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-labelledby="title desc">
+  <title id="title">Wanderlust</title>
+  <desc id="desc">A sunset over layered mountains with a dotted travel route connecting map pins, next to the Wanderlust name and a compass.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#151a45"/>
+      <stop offset="0.5" stop-color="#4f3488"/>
+      <stop offset="0.8" stop-color="#d8678a"/>
+      <stop offset="1" stop-color="#f7b267"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe7a8" stop-opacity="0.9"/>
+      <stop offset="0.45" stop-color="#ffc178" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffc178" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="card">
+      <rect width="1280" height="400" rx="28"/>
+    </clipPath>
+    <g id="pin">
+      <path d="M0 0 C-10 -12 -15 -20 -15 -28 A15 15 0 1 1 15 -28 C15 -20 10 -12 0 0 Z" fill="#ff6b6b" stroke="#ffffff" stroke-width="2.5"/>
+      <circle cy="-28" r="5.5" fill="#ffffff"/>
+    </g>
+  </defs>
+
+  <g clip-path="url(#card)">
+    <rect width="1280" height="400" fill="url(#sky)"/>
+
+    <!-- stars -->
+    <g fill="#ffffff">
+      <circle cx="560" cy="40" r="1.6" opacity="0.8"/>
+      <circle cx="640" cy="78" r="1.2" opacity="0.6"/>
+      <circle cx="720" cy="30" r="1.8" opacity="0.9"/>
+      <circle cx="805" cy="64" r="1.2" opacity="0.6"/>
+      <circle cx="880" cy="24" r="1.5" opacity="0.8"/>
+      <circle cx="960" cy="52" r="1.1" opacity="0.5"/>
+      <circle cx="1040" cy="34" r="1.7" opacity="0.9"/>
+      <circle cx="1120" cy="70" r="1.2" opacity="0.6"/>
+      <circle cx="1200" cy="28" r="1.5" opacity="0.8"/>
+      <circle cx="1250" cy="88" r="1.1" opacity="0.5"/>
+      <circle cx="470" cy="70" r="1.1" opacity="0.5"/>
+      <circle cx="1000" cy="104" r="1.3" opacity="0.5"/>
+    </g>
+
+    <!-- setting sun -->
+    <circle cx="950" cy="215" r="170" fill="url(#glow)"/>
+    <circle cx="950" cy="215" r="54" fill="#ffd88a"/>
+
+    <!-- mountain layers, back to front -->
+    <path d="M0 320 L140 270 L260 300 L380 250 L500 290 L600 228 L720 280 L840 200 L960 262 L1080 168 L1200 240 L1280 204 V400 H0 Z" fill="#7a4a9e" opacity="0.75"/>
+    <path d="M0 350 L160 302 L300 340 L440 290 L580 340 L720 270 L860 330 L1000 262 L1140 322 L1280 282 V400 H0 Z" fill="#3b2968"/>
+    <path d="M0 376 Q250 344 500 368 T1000 360 T1280 350 V400 H0 Z" fill="#151a45"/>
+
+    <!-- travel route -->
+    <path d="M620 362 C700 312 770 336 840 296 S960 236 1040 252 S1150 180 1200 146" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 14" opacity="0.95"/>
+    <use href="#pin" transform="translate(620 362)"/>
+    <use href="#pin" transform="translate(840 296)"/>
+    <use href="#pin" transform="translate(1040 252)"/>
+    <use href="#pin" transform="translate(1200 146)"/>
+
+    <!-- compass -->
+    <g transform="translate(118 150)">
+      <circle r="52" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.9"/>
+      <circle r="42" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="2 6" opacity="0.6"/>
+      <polygon points="0,-44 12,0 -12,0" fill="#ff6b6b"/>
+      <polygon points="0,44 12,0 -12,0" fill="#ffffff"/>
+      <circle r="5" fill="#151a45" stroke="#ffffff" stroke-width="2"/>
+    </g>
+
+    <!-- wordmark -->
+    <g font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+      <text x="196" y="178" font-size="92" font-weight="700" fill="#ffffff" letter-spacing="1">Wanderlust</text>
+      <text x="200" y="226" font-size="28" fill="#ffe6d5">An AI trip planner grounded in real travel guides</text>
+
+      <g font-size="19" font-weight="600" fill="#ffffff" text-anchor="middle">
+        <rect x="200" y="252" width="86" height="36" rx="18" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.45"/>
+        <text x="243" y="276">RAG</text>
+        <rect x="298" y="252" width="140" height="36" rx="18" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.45"/>
+        <text x="368" y="276">Agentic AI</text>
+        <rect x="450" y="252" width="140" height="36" rx="18" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.45"/>
+        <text x="520" y="276">Wikivoyage</text>
+      </g>
+    </g>
+  </g>
+</svg>
