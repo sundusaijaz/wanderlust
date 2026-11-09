@@ -336,7 +336,7 @@ def _print_results(guide_index: GuideIndex, results, mode: SearchMode) -> None:
             if rank is not None
         ]
         console.print(f"\n[bold]{n}. {title}[/bold]  [dim]{' · '.join(ranks)}[/dim]")
-        console.print(escape(_preview(chunk.text, 320)), soft_wrap=False)
+        console.print(escape(_preview(chunk.text, 320)), highlight=False)
         console.print(f"[dim]{escape(chunk.attribution.url)}[/dim]")
     console.print(
         f"\n[dim]{mode.value} search over {guide_index.meta.chunk_count} passages · "
