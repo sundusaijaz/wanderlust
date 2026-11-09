@@ -55,6 +55,11 @@ class Settings(BaseSettings):
         default=Path(".wanderlust"),
         description="Where cached guides and search indexes are stored.",
     )
+    wikivoyage_cache_ttl_hours: int = Field(
+        default=168,
+        ge=0,
+        description="How long a downloaded guide is reused before fetching it again.",
+    )
 
     def api_key(self) -> str:
         """Return the API key for the selected provider.
