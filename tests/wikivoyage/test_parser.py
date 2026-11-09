@@ -107,3 +107,14 @@ def test_article_without_headings_is_all_summary():
     article = parse_article("Just a stub.", title="T", language="en", page_id=1, revision_id=1)
     assert article.summary == "Just a stub."
     assert article.sections == []
+
+
+def test_district_links_are_collected_once_in_order(bigville_wikitext):
+    article = parse_article(
+        bigville_wikitext, title="Bigville", language="en", page_id=1, revision_id=1
+    )
+    assert article.districts == ["Bigville/Old Town", "Bigville/Docks", "Bigville/Old Quarter"]
+
+
+def test_articles_without_districts(article):
+    assert article.districts == []

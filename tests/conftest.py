@@ -15,21 +15,40 @@ def examplestad_wikitext() -> str:
 
 
 @pytest.fixture
-def fake_api(examplestad_wikitext) -> Callable[[httpx.Request], httpx.Response]:
-    """A stand-in for the MediaWiki API that knows a single made-up article."""
+def bigville_wikitext() -> str:
+    return (FIXTURES / "bigville.wikitext").read_text(encoding="utf-8")
+
+
+# Made-up pages served by the fake API: lookup key -> (title, page id, fixture file).
+FAKE_PAGES = {
+    "examplestad": ("Examplestad", 42, "examplestad.wikitext"),
+    "example town": ("Examplestad", 42, "examplestad.wikitext"),
+    "bigville": ("Bigville", 100, "bigville.wikitext"),
+    "bigville/old town": ("Bigville/Old Town", 101, "bigville_old_town.wikitext"),
+    # An old name that redirects to the Old Town page.
+    "bigville/old quarter": ("Bigville/Old Town", 101, "bigville_old_town.wikitext"),
+    # "Bigville/Docks" is linked but deliberately missing, to test skipping.
+}
+
+
+@pytest.fixture
+def fake_api() -> Callable[[httpx.Request], httpx.Response]:
+    """A stand-in for the MediaWiki API that knows a few made-up articles."""
 
     def handler(request: httpx.Request) -> httpx.Response:
         params = request.url.params
         if params.get("action") == "parse":
-            if params.get("page", "").casefold() in {"examplestad", "example town"}:
+            key = " ".join(params.get("page", "").replace("_", " ").split()).casefold()
+            if key in FAKE_PAGES:
+                title, page_id, filename = FAKE_PAGES[key]
                 return httpx.Response(
                     200,
                     json={
                         "parse": {
-                            "title": "Examplestad",
-                            "pageid": 42,
+                            "title": title,
+                            "pageid": page_id,
                             "revid": 7,
-                            "wikitext": examplestad_wikitext,
+                            "wikitext": (FIXTURES / filename).read_text(encoding="utf-8"),
                         }
                     },
                 )

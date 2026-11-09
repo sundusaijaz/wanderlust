@@ -113,3 +113,29 @@ def test_invalid_queries(report):
 
 def test_no_keyword_match_returns_nothing(report):
     assert Searcher(report.index).search("snorkelling").results == []
+
+
+def test_build_index_follows_districts(loader, fake_embedder):
+    report = build_index("Bigville", loader, fake_embedder)
+    # "Old Quarter" redirects to "Old Town", which must only be indexed once.
+    assert [a.title for a in report.articles] == ["Bigville", "Bigville/Old Town"]
+    assert report.skipped == ["Bigville/Docks"]
+    ids = [chunk.id for chunk in report.index.chunks]
+    assert len(ids) == len(set(ids))
+    assert report.index.meta.articles == {"Bigville": 7, "Bigville/Old Town": 7}
+
+    top = Searcher(report.index, fake_embedder).search("cathedral bell tower").results[0]
+    assert top.chunk.listing_name == "Bigville Cathedral"
+    assert top.chunk.breadcrumb == "Bigville/Old Town > See"
+
+
+def test_build_index_can_skip_districts(loader):
+    report = build_index("Bigville", loader, None, follow_districts=False)
+    assert [a.title for a in report.articles] == ["Bigville"]
+    assert report.skipped == []
+
+
+def test_build_index_caps_district_count(loader):
+    report = build_index("Bigville", loader, None, max_districts=1)
+    assert [a.title for a in report.articles] == ["Bigville", "Bigville/Old Town"]
+    assert report.skipped == ["Bigville/Docks", "Bigville/Old Quarter"]
