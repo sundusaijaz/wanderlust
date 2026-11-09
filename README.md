@@ -66,8 +66,8 @@ flowchart LR
 | Feature | Status |
 |---|---|
 | Configuration and command-line interface | ✅ Done |
-| Wikivoyage client with caching | 🚧 Next ([#1](https://github.com/sundusaijaz/wanderlust/issues/1)) |
-| Hybrid retrieval index | 📋 Planned ([#2](https://github.com/sundusaijaz/wanderlust/issues/2)) |
+| Wikivoyage client with caching (`wanderlust guide`) | ✅ Done |
+| Hybrid retrieval index | 🚧 Next ([#2](https://github.com/sundusaijaz/wanderlust/issues/2)) |
 | OpenAI / Anthropic provider layer | 📋 Planned ([#3](https://github.com/sundusaijaz/wanderlust/issues/3)) |
 | Grounded Q&A with citations | 📋 Planned ([#4](https://github.com/sundusaijaz/wanderlust/issues/4)) |
 | Weather, geocoding and distance tools | 📋 Planned ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
@@ -87,7 +87,29 @@ cp .env.example .env
 uv run wanderlust --help
 ```
 
-Check your setup at any time. API keys are never printed:
+### Read a travel guide
+
+Look up any destination on Wikivoyage. Guides are cached locally for a week:
+
+```bash
+uv run wanderlust guide Sintra                 # summary and sections
+uv run wanderlust guide Sintra --section See   # every place in one section
+uv run wanderlust guide Sintra --refresh       # download it again
+```
+
+<p align="center">
+  <img src="docs/assets/cli-guide.svg" alt="Terminal showing the guide overview for a destination: summary, sections and number of places" width="720">
+</p>
+
+<p align="center">
+  <img src="docs/assets/cli-guide-section.svg" alt="Terminal showing the See section with each place's price, hours, address and description" width="720">
+</p>
+
+<sub>Screenshots use a made-up town from the test suite.</sub>
+
+### Check your configuration
+
+API keys are never printed:
 
 <p align="center">
   <img src="docs/assets/cli-config.svg" alt="Terminal showing 'wanderlust --version' and 'wanderlust config' output" width="560">

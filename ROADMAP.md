@@ -7,7 +7,7 @@ and lands through its own pull request.
 
 - [x] **M1: Project foundation.** Package layout, configuration, CLI skeleton,
       tests and CI.
-- [ ] **M2: Wikivoyage client.** Fetch and parse destination articles through
+- [x] **M2: Wikivoyage client.** Fetch and parse destination articles through
       the MediaWiki API, split them by section (See, Do, Eat, Sleep, Get around),
       and cache them locally.
 - [ ] **M3: Retrieval.** Chunk articles, embed them and store them in a local
