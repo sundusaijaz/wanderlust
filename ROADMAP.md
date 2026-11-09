@@ -10,7 +10,7 @@ and lands through its own pull request.
 - [x] **M2: Wikivoyage client.** Fetch and parse destination articles through
       the MediaWiki API, split them by section (See, Do, Eat, Sleep, Get around),
       and cache them locally.
-- [ ] **M3: Retrieval.** Chunk articles, embed them and store them in a local
+- [x] **M3: Retrieval.** Chunk articles, embed them and store them in a local
       vector index, with hybrid (keyword + vector) search.
 - [ ] **M4: LLM provider layer.** One interface for OpenAI and Anthropic,
       with streaming and a fake provider for tests.

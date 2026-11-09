@@ -9,12 +9,14 @@ SVG in docs/assets/. Run it after changing CLI output:
 from __future__ import annotations
 
 import os
+import shlex
 import tempfile
 from contextlib import contextmanager, nullcontext, suppress
 from pathlib import Path
 
 import httpx
 from rich.console import Console
+from rich.markup import escape
 
 import wanderlust.cli as cli
 from wanderlust.wikivoyage.cache import ArticleCache
@@ -31,6 +33,7 @@ DEMO_ENV = {
     "WANDERLUST_LLM_PROVIDER": "anthropic",
     "ANTHROPIC_API_KEY": "placeholder-for-screenshot",
     "WANDERLUST_WIKIVOYAGE_LANGUAGE": "en",
+    "WANDERLUST_EMBEDDING_PROVIDER": "local",
 }
 
 
@@ -64,14 +67,54 @@ def demo_loader(settings) -> GuideLoader:
     return GuideLoader(client, ArticleCache(settings.data_dir))
 
 
-def render(commands: list[list[str]], filename: str, title: str, *, width: int = 64) -> Path:
+class DemoEmbedder:
+    """Tiny offline embedder (hashed bag of words) so the search screenshot needs no API."""
+
+    name = "demo:bag-of-words"
+
+    def embed(self, texts):
+        import hashlib
+
+        import numpy as np
+
+        from wanderlust.retrieval.embeddings import normalize
+        from wanderlust.retrieval.keyword import tokenize
+
+        vectors = np.zeros((len(texts), 64), dtype=np.float32)
+        for row, text in enumerate(texts):
+            for token in tokenize(text):
+                bucket = int.from_bytes(hashlib.md5(token.encode()).digest()[:4], "little") % 64
+                vectors[row, bucket] += 1.0
+        return normalize(vectors)
+
+
+class SilentStatus:
+    def update(self, *args, **kwargs) -> None:
+        pass
+
+
+REAL_BUILD_EMBEDDER = cli.build_embedder
+
+
+def render(
+    commands: list[list[str]],
+    filename: str,
+    title: str,
+    *,
+    width: int = 64,
+    embedder_factory=None,
+) -> Path:
     console = Console(record=True, width=width, force_terminal=True, color_system="truecolor")
-    console.status = lambda *args, **kwargs: nullcontext()  # spinners don't belong in a still
+    # Spinners don't belong in a still image: swap in a silent stand-in.
+    console.status = lambda *args, **kwargs: nullcontext(SilentStatus())
     cli.console = console
     cli.build_loader = demo_loader
+    cli.build_embedder = embedder_factory or REAL_BUILD_EMBEDDER
     with demo_environment():
         for args in commands:
-            console.print(f"[bold green]$[/] wanderlust {' '.join(args)}")
+            console.print(
+                f"[bold green]$[/] wanderlust {escape(shlex.join(args))}", highlight=False
+            )
             with suppress(SystemExit):
                 cli.app(args, standalone_mode=False)
             console.print()
@@ -90,6 +133,16 @@ def main() -> None:
             "cli-guide-section.svg",
             "wanderlust guide --section",
             width=96,
+        ),
+        render(
+            [
+                ["index", "Examplestad"],
+                ["search", "Examplestad", "lighthouse at sunset", "-k", "2"],
+            ],
+            "cli-search.svg",
+            "wanderlust search",
+            width=96,
+            embedder_factory=lambda settings: DemoEmbedder(),
         ),
     ]
     for path in paths:
