@@ -12,7 +12,11 @@ from rich.panel import Panel
 from rich.table import Table
 
 from wanderlust import __version__
-from wanderlust.config import Settings
+from wanderlust.config import MissingAPIKeyError, Settings
+from wanderlust.retrieval.builder import BuildReport, build_index
+from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
+from wanderlust.retrieval.index import GuideIndex, IndexStore
+from wanderlust.retrieval.search import Searcher, SearchError, SearchMode
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
 from wanderlust.wikivoyage.service import build_loader
@@ -76,6 +80,12 @@ def config() -> None:
     table.add_row("Wikivoyage language", settings.wikivoyage_language)
     table.add_row("Data directory", str(settings.data_dir))
     table.add_row("Guide cache lifetime", f"{settings.wikivoyage_cache_ttl_hours} hours")
+    try:
+        embedder = build_embedder(settings)
+        semantic = embedder.name if embedder else "[yellow]off (keyword search only)[/yellow]"
+    except MissingAPIKeyError:
+        semantic = "[red]openai selected but OPENAI_API_KEY is missing[/red]"
+    table.add_row("Semantic search", f"{settings.embedding_provider.value} → {semantic}")
     console.print(table)
 
 
@@ -200,6 +210,138 @@ def _print_section(article: Article, section: Section) -> None:
                     details.append("[green]📍 on map[/green]")
                 table.add_row(name, "\n".join(details), escape(_preview(listing.description, 220)))
             console.print(table)
+
+
+def _embedder_or_exit(settings: Settings) -> Embedder | None:
+    try:
+        return build_embedder(settings)
+    except MissingAPIKeyError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+
+def _build_and_save(
+    place: str,
+    settings: Settings,
+    embedder: Embedder | None,
+    *,
+    refresh: bool = False,
+    follow_districts: bool = True,
+) -> BuildReport:
+    loader = build_loader(settings)
+    try:
+        with console.status("Building the search index...") as status:
+            report = build_index(
+                place,
+                loader,
+                embedder,
+                refresh=refresh,
+                follow_districts=follow_districts,
+                on_progress=lambda message: status.update(escape(message) + "..."),
+            )
+    except ArticleNotFoundError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        if exc.suggestion:
+            console.print(f'Try: [bold]wanderlust index "{escape(exc.suggestion)}"[/bold]')
+        raise typer.Exit(code=1) from exc
+    except (WikivoyageError, EmbeddingError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+    finally:
+        loader.close()
+    IndexStore(settings.data_dir).save(report.index)
+    return report
+
+
+@app.command()
+def index(
+    place: Annotated[str, typer.Argument(help='Destination to index, e.g. "Lisbon".')],
+    refresh: Annotated[
+        bool, typer.Option("--refresh", help="Download the guides again before indexing.")
+    ] = False,
+    districts: Annotated[
+        bool,
+        typer.Option("--districts/--no-districts", help="Also index district articles."),
+    ] = True,
+) -> None:
+    """Build the search index for a destination (and its districts)."""
+    settings = _load_settings()
+    embedder = _embedder_or_exit(settings)
+    report = _build_and_save(place, settings, embedder, refresh=refresh, follow_districts=districts)
+
+    meta = report.index.meta
+    console.print(
+        f"[green]✓[/green] Indexed [bold]{escape(meta.destination)}[/bold]: "
+        f"{meta.chunk_count} passages from {len(report.articles)} "
+        f"article{'s' if len(report.articles) != 1 else ''}."
+    )
+    if len(report.articles) > 1:
+        names = ", ".join(a.title.split("/", 1)[-1] for a in report.articles[1:])
+        console.print(f"  Districts: {escape(names)}")
+    if report.skipped:
+        console.print(f"[dim]  Skipped: {escape(', '.join(report.skipped))}[/dim]")
+    if meta.embedder:
+        console.print(f"  Semantic search: {escape(meta.embedder)} ({meta.dims} dimensions)")
+    else:
+        console.print(
+            "  [yellow]Keyword search only.[/yellow] Set OPENAI_API_KEY or install "
+            '"wanderlust\\[local]" for semantic search.'
+        )
+    console.print(f'[dim]Try: wanderlust search "{escape(meta.destination)}" "museums"[/dim]')
+
+
+@app.command()
+def search(
+    place: Annotated[str, typer.Argument(help='Destination, e.g. "Lisbon".')],
+    query: Annotated[str, typer.Argument(help='What to look for, e.g. "rainy day museums".')],
+    top: Annotated[int, typer.Option("--top", "-k", min=1, max=50, help="Number of results.")] = 5,
+    mode: Annotated[
+        SearchMode, typer.Option("--mode", "-m", help="hybrid, keyword or vector.")
+    ] = SearchMode.HYBRID,
+) -> None:
+    """Search a destination's guides. Builds the index first if needed."""
+    settings = _load_settings()
+    embedder = _embedder_or_exit(settings)
+
+    guide_index = IndexStore(settings.data_dir).load(settings.wikivoyage_language, place)
+    if guide_index is None:
+        console.print(f"[dim]No index for {escape(place)} yet; building it now.[/dim]")
+        guide_index = _build_and_save(place, settings, embedder).index
+
+    try:
+        response = Searcher(guide_index, embedder).search(query, k=top, mode=mode)
+    except SearchError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    if response.note:
+        console.print(f"[yellow]{escape(response.note)}[/yellow]")
+    if not response.results:
+        console.print(
+            f"No passages about '{escape(query)}' in the {guide_index.meta.destination} guide."
+        )
+        raise typer.Exit(code=1)
+    _print_results(guide_index, response.results, response.mode)
+
+
+def _print_results(guide_index: GuideIndex, results, mode: SearchMode) -> None:
+    for n, result in enumerate(results, start=1):
+        chunk = result.chunk
+        title = escape(chunk.breadcrumb)
+        if chunk.listing_name:
+            title += f" · [cyan]{escape(chunk.listing_name)}[/cyan]"
+        ranks = [
+            f"{label} #{rank}"
+            for label, rank in (("keyword", result.keyword_rank), ("vector", result.vector_rank))
+            if rank is not None
+        ]
+        console.print(f"\n[bold]{n}. {title}[/bold]  [dim]{' · '.join(ranks)}[/dim]")
+        console.print(escape(_preview(chunk.text, 320)), soft_wrap=False)
+        console.print(f"[dim]{escape(chunk.attribution.url)}[/dim]")
+    console.print(
+        f"\n[dim]{mode.value} search over {guide_index.meta.chunk_count} passages · "
+        f"Wikivoyage content, {chunk.attribution.license}[/dim]"
+    )
 
 
 @app.command()

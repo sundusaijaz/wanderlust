@@ -12,7 +12,12 @@ def isolated_env(monkeypatch, tmp_path):
     """Run each test in an empty folder so a developer's .env is not picked up."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("COLUMNS", "200")  # wide enough that tables don't wrap mid-word
-    for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "WANDERLUST_LLM_PROVIDER"):
+    for name in (
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "WANDERLUST_LLM_PROVIDER",
+        "WANDERLUST_EMBEDDING_PROVIDER",
+    ):
         monkeypatch.delenv(name, raising=False)
 
 
@@ -139,3 +144,99 @@ def test_guide_network_error(monkeypatch, make_client, tmp_path):
     result = runner.invoke(app, ["guide", "Examplestad"])
     assert result.exit_code == 1
     assert "Could not reach Wikivoyage" in result.output
+
+
+@pytest.fixture
+def semantic(monkeypatch, fake_embedder):
+    """Use the deterministic fake embedder instead of OpenAI or a local model."""
+    monkeypatch.setattr("wanderlust.cli.build_embedder", lambda settings: fake_embedder)
+    return fake_embedder
+
+
+@pytest.fixture
+def keyword_only(monkeypatch):
+    monkeypatch.setattr("wanderlust.cli.build_embedder", lambda settings: None)
+
+
+def test_index_reports_passages_and_districts(fake_guides, semantic):
+    result = runner.invoke(app, ["index", "Bigville"])
+    assert result.exit_code == 0, result.output
+    assert "Indexed Bigville" in result.output
+    assert "from 2 articles" in result.output
+    assert "Districts: Old Town" in result.output
+    assert "Skipped: Bigville/Docks" in result.output
+    assert "fake:bag-of-words (64 dimensions)" in result.output
+
+
+def test_index_without_districts(fake_guides, keyword_only):
+    result = runner.invoke(app, ["index", "Bigville", "--no-districts"])
+    assert result.exit_code == 0, result.output
+    assert "from 1 article." in result.output
+    assert "Keyword search only" in result.output
+    assert "wanderlust[local]" in result.output
+
+
+def test_index_unknown_place(fake_guides, keyword_only):
+    result = runner.invoke(app, ["index", "Example harbour"])
+    assert result.exit_code == 1
+    assert 'wanderlust index "Examplestad"' in result.output
+
+
+def test_search_builds_index_on_first_use_then_reuses_it(fake_guides, semantic):
+    first = runner.invoke(app, ["search", "Examplestad", "fish soup"])
+    assert first.exit_code == 0, first.output
+    assert "building it now" in first.output
+    assert "Harbour Kitchen" in first.output or "Fish soup" in first.output
+    assert "https://en.wikivoyage.org/wiki/Examplestad#Eat" in first.output
+    assert "hybrid search over" in first.output
+
+    second = runner.invoke(app, ["search", "examplestad", "lighthouse"])
+    assert "building it now" not in second.output
+    assert "Old Lighthouse" in second.output
+
+
+def test_search_shows_ranks_and_respects_top(fake_guides, semantic):
+    result = runner.invoke(app, ["search", "Examplestad", "lighthouse sunset", "-k", "1"])
+    assert result.exit_code == 0, result.output
+    assert "1. Examplestad > See · Old Lighthouse" in result.output
+    assert "keyword #1" in result.output and "vector #" in result.output
+    assert "2. " not in result.output
+
+
+def test_search_keyword_only_explains_fallback(fake_guides, keyword_only):
+    result = runner.invoke(app, ["search", "Examplestad", "tram"])
+    assert result.exit_code == 0, result.output
+    assert "Using keyword search only" in result.output
+    assert "keyword search over" in result.output
+
+
+def test_search_vector_mode_unavailable(fake_guides, keyword_only):
+    result = runner.invoke(app, ["search", "Examplestad", "tram", "--mode", "vector"])
+    assert result.exit_code == 1
+    assert "Vector search is unavailable" in result.output
+
+
+def test_search_without_matches(fake_guides, keyword_only):
+    result = runner.invoke(app, ["search", "Examplestad", "snorkelling"])
+    assert result.exit_code == 1
+    assert "No passages about 'snorkelling'" in result.output
+
+
+def test_search_missing_openai_key(fake_guides, monkeypatch):
+    monkeypatch.setenv("WANDERLUST_EMBEDDING_PROVIDER", "openai")
+    result = runner.invoke(app, ["search", "Examplestad", "tram"])
+    assert result.exit_code == 1
+    assert "OPENAI_API_KEY" in result.output
+
+
+def test_config_shows_semantic_search_choice(monkeypatch):
+    from wanderlust.retrieval.embeddings import LocalEmbedder
+
+    monkeypatch.setattr(LocalEmbedder, "available", staticmethod(lambda: False))
+    result = runner.invoke(app, ["config"])
+    assert "Semantic search" in result.output
+    assert "keyword search only" in result.output
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-secret-value")
+    result = runner.invoke(app, ["config"])
+    assert "openai:text-embedding-3-small" in result.output
