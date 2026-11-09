@@ -138,19 +138,27 @@ def _print_overview(article: Article) -> None:
             Panel(escape(_preview(article.summary, 400)), title=f"[bold]{escape(article.title)}")
         )
 
+    rows = [
+        item
+        for item in article.sections
+        if not (item.is_empty and not article.subsections(item.title))
+    ]
+    labels = [item.title if item.level == 2 else f"  └ {item.title}" for item in rows]
+
+    label_width = max(map(len, labels), default=7)
+    # Borders and padding take 10 columns; give the preview whatever is left.
+    preview_width = max(20, console.width - label_width - 6 - 10)
+
     table = Table(title="Sections", title_justify="left", show_lines=False)
-    table.add_column("Section", style="bold", no_wrap=True)
-    table.add_column("Places", justify="right")
-    table.add_column("Preview", no_wrap=True, overflow="ellipsis")
-    for item in article.sections:
-        if item.is_empty and not article.subsections(item.title):
-            continue
-        label = item.title if item.level == 2 else f"  └ {item.title}"
+    table.add_column("Section", style="bold", no_wrap=True, min_width=label_width)
+    table.add_column("Places", justify="right", no_wrap=True, min_width=6)
+    table.add_column("Preview", no_wrap=True, max_width=preview_width)
+    for item, label in zip(rows, labels, strict=True):
         preview = item.text or ", ".join(listing.name for listing in item.listings)
         table.add_row(
             escape(label),
             str(len(item.listings)) if item.listings else "",
-            escape(_preview(preview, 120)),
+            escape(_preview(preview, preview_width)),
         )
     console.print(table)
     console.print(
