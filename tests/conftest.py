@@ -6,7 +6,7 @@ import pytest
 
 from wanderlust.wikivoyage.client import WikivoyageClient
 
-FIXTURES = Path(__file__).parent.parent / "fixtures"
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture
