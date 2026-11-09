@@ -17,6 +17,15 @@ class LLMProvider(StrEnum):
     ANTHROPIC = "anthropic"
 
 
+class EmbeddingProvider(StrEnum):
+    """How guide passages are turned into vectors for semantic search."""
+
+    AUTO = "auto"  # OpenAI if a key is set, else a local model if installed, else none
+    OPENAI = "openai"
+    LOCAL = "local"
+    NONE = "none"  # keyword search only
+
+
 class MissingAPIKeyError(RuntimeError):
     """Raised when the selected provider has no API key configured."""
 
@@ -41,6 +50,11 @@ class Settings(BaseSettings):
     llm_model: str | None = Field(
         default=None,
         description="Model name. Leave empty to use the provider's default.",
+    )
+    embedding_provider: EmbeddingProvider = EmbeddingProvider.AUTO
+    embedding_model: str | None = Field(
+        default=None,
+        description="Embedding model name. Leave empty to use the provider's default.",
     )
 
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")

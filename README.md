@@ -67,8 +67,8 @@ flowchart LR
 |---|---|
 | Configuration and command-line interface | ✅ Done |
 | Wikivoyage client with caching (`wanderlust guide`) | ✅ Done |
-| Hybrid retrieval index | 🚧 Next ([#2](https://github.com/sundusaijaz/wanderlust/issues/2)) |
-| OpenAI / Anthropic provider layer | 📋 Planned ([#3](https://github.com/sundusaijaz/wanderlust/issues/3)) |
+| Hybrid search over guides and districts (`wanderlust search`) | ✅ Done |
+| OpenAI / Anthropic provider layer | 🚧 Next ([#3](https://github.com/sundusaijaz/wanderlust/issues/3)) |
 | Grounded Q&A with citations | 📋 Planned ([#4](https://github.com/sundusaijaz/wanderlust/issues/4)) |
 | Weather, geocoding and distance tools | 📋 Planned ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
 | Planning agent | 📋 Planned ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
@@ -105,6 +105,39 @@ uv run wanderlust guide Sintra --refresh       # download it again
   <img src="docs/assets/cli-guide-section.svg" alt="Terminal showing the See section with each place's price, hours, address and description" width="720">
 </p>
 
+### Search the guides
+
+Ask in your own words. Wanderlust indexes the destination (and, for big cities
+such as Lisbon or Berlin, every district article) and combines keyword search
+with semantic search:
+
+```bash
+uv run wanderlust index Lisbon                          # build the index once
+uv run wanderlust search Lisbon "historic tram ride"    # hybrid search (default)
+uv run wanderlust search Lisbon "museums" --mode keyword -k 10
+```
+
+<p align="center">
+  <img src="docs/assets/cli-search.svg" alt="Terminal showing 'wanderlust index' and a hybrid 'wanderlust search' with ranked, cited passages" width="720">
+</p>
+
+Semantic search uses OpenAI embeddings when `OPENAI_API_KEY` is set, or a free
+local model with `pip install "wanderlust[local]"` (or `uv sync --extra local`).
+Without either, Wanderlust falls back to keyword search and tells you so.
+
+<details>
+<summary>How the search works</summary>
+
+1. Each guide section is split into passages of up to 800 characters, and each
+   listing (a museum, a restaurant…) becomes its own passage with price, hours
+   and address. Every passage keeps a link to its Wikivoyage section.
+2. **Keyword search** ranks passages with BM25 (accent- and plural-insensitive).
+3. **Semantic search** ranks them by cosine similarity of embeddings.
+4. **Hybrid search** merges both rankings with reciprocal rank fusion, so a
+   passage that does well in both comes first.
+
+</details>
+
 <sub>Screenshots use a made-up town from the test suite.</sub>
 
 ### Check your configuration
@@ -123,7 +156,8 @@ API keys are never printed:
 | Command line | [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/) |
 | Configuration | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
 | Language models | OpenAI or Anthropic APIs |
-| Travel data | [Wikivoyage](https://www.wikivoyage.org/) via the MediaWiki API |
+| Travel data | [Wikivoyage](https://www.wikivoyage.org/) via the MediaWiki API, parsed with [mwparserfromhell](https://github.com/earwig/mwparserfromhell) |
+| Search | BM25 (built in), NumPy, OpenAI embeddings or [fastembed](https://github.com/qdrant/fastembed) |
 | Weather and places | [Open-Meteo](https://open-meteo.com/) (free, no key) |
 | Quality | pytest, Ruff, GitHub Actions |
 

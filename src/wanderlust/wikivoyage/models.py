@@ -90,6 +90,10 @@ class Article(BaseModel):
     revision_id: int
     summary: str = Field(default="", description="The lead text before the first heading.")
     sections: list[Section] = Field(default_factory=list)
+    districts: list[str] = Field(
+        default_factory=list,
+        description="Titles of district sub-articles (e.g. 'Lisbon/Baixa') for big cities.",
+    )
     fetched_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     license: str = WIKIVOYAGE_LICENSE
     license_url: str = WIKIVOYAGE_LICENSE_URL

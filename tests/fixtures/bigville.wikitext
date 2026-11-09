@@ -1,0 +1,15 @@
+'''Bigville''' is a large, made-up city split into districts.
+
+==Districts==
+{{Regionlist
+| region1name=[[Bigville/Old Town|Old Town]]
+| region1description=Narrow lanes, the cathedral and most museums.
+| region2name=[[Bigville/Docks]]
+| region2description=Former warehouses, now bars and galleries.
+| region3name=[[bigville/Old_Town|Old Town (again)]]
+| region4name=[[Bigville/Old Quarter]]
+}}
+See also [[Smallville]], a nearby town that is not a district.
+
+==Get around==
+A metro line connects all districts.

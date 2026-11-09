@@ -57,7 +57,9 @@ def parse_article(
     revision_id: int,
 ) -> Article:
     """Parse a full article's wikitext into an :class:`Article`."""
-    lead, raw_sections = _split_sections(mwparserfromhell.parse(wikitext))
+    code = mwparserfromhell.parse(wikitext)
+    districts = _district_titles(code, title)
+    lead, raw_sections = _split_sections(code)
     summary, _ = _clean(Wikicode(lead.nodes))
 
     sections: list[Section] = []
@@ -84,7 +86,20 @@ def parse_article(
         revision_id=revision_id,
         summary=summary,
         sections=sections,
+        districts=districts,
     )
+
+
+def _district_titles(code: Wikicode, title: str) -> list[str]:
+    """Links to sub-articles such as 'Lisbon/Baixa', which Wikivoyage uses for districts."""
+    prefix = f"{title}/".casefold()
+    found: dict[str, str] = {}
+    for link in code.filter_wikilinks(recursive=True):
+        target = " ".join(str(link.title).split("#")[0].replace("_", " ").split())
+        if target.casefold().startswith(prefix) and len(target) > len(prefix):
+            canonical = title + target[len(title) :]
+            found.setdefault(canonical.casefold(), canonical)
+    return list(found.values())
 
 
 def _split_sections(code: Wikicode) -> tuple[_RawSection, list[_RawSection]]:

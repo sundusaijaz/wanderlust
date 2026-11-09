@@ -1,0 +1,7 @@
+The '''Old Town''' is the historic heart of [[Bigville]].
+
+==See==
+* {{see | name=Bigville Cathedral | lat=50.1 | long=8.1 | content=A Gothic cathedral with a 90 m bell tower. }}
+
+==Eat==
+* {{eat | name=Lane Bakery | content=Famous for cinnamon buns. }}

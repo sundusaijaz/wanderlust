@@ -24,6 +24,14 @@ def normalize_title(title: str) -> str:
     return " ".join(title.replace("_", " ").split()).casefold()
 
 
+def title_slug(title: str) -> str:
+    """A filesystem-safe, collision-resistant name for a title."""
+    key = normalize_title(title)
+    slug = _NON_SLUG.sub("-", key).strip("-")[:60] or "article"
+    digest = hashlib.sha1(key.encode("utf-8")).hexdigest()[:10]
+    return f"{slug}-{digest}"
+
+
 class ArticleCache:
     """Stores articles as JSON files under ``<root>/wikivoyage/<language>/``.
 
@@ -35,10 +43,7 @@ class ArticleCache:
         self.ttl = ttl
 
     def path_for(self, language: str, title: str) -> Path:
-        key = normalize_title(title)
-        slug = _NON_SLUG.sub("-", key).strip("-")[:60] or "article"
-        digest = hashlib.sha1(key.encode("utf-8")).hexdigest()[:10]
-        return self.root / language / f"{slug}-{digest}.json"
+        return self.root / language / f"{title_slug(title)}.json"
 
     def get(self, language: str, title: str, *, now: datetime | None = None) -> Article | None:
         """Return a fresh cached article, or ``None`` if missing, stale or unreadable."""
