@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from wanderlust.config import LLMProvider, MissingAPIKeyError, Settings
+from wanderlust.config import EmbeddingProvider, LLMProvider, MissingAPIKeyError, Settings
 
 
 @pytest.fixture(autouse=True)
@@ -17,6 +17,8 @@ def clean_env(monkeypatch):
         "WANDERLUST_WIKIVOYAGE_LANGUAGE",
         "WANDERLUST_DATA_DIR",
         "WANDERLUST_WIKIVOYAGE_CACHE_TTL_HOURS",
+        "WANDERLUST_EMBEDDING_PROVIDER",
+        "WANDERLUST_EMBEDDING_MODEL",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -32,6 +34,8 @@ def test_defaults():
     assert settings.wikivoyage_language == "en"
     assert settings.data_dir == Path(".wanderlust")
     assert settings.wikivoyage_cache_ttl_hours == 168
+    assert settings.embedding_provider is EmbeddingProvider.AUTO
+    assert settings.embedding_model is None
 
 
 def test_reads_prefixed_env_vars(monkeypatch):

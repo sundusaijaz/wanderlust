@@ -59,3 +59,34 @@ def make_client(fake_api):
         return WikivoyageClient("en", http_client=http), requests
 
     return factory
+
+
+class FakeEmbedder:
+    """Deterministic offline embedder: hashed bag of words, so similar texts score higher."""
+
+    name = "fake:bag-of-words"
+
+    def __init__(self, dims: int = 64) -> None:
+        self.dims = dims
+        self.calls: list[list[str]] = []
+
+    def embed(self, texts):
+        import hashlib
+
+        import numpy as np
+
+        from wanderlust.retrieval.embeddings import normalize
+        from wanderlust.retrieval.keyword import tokenize
+
+        self.calls.append(list(texts))
+        vectors = np.zeros((len(texts), self.dims), dtype=np.float32)
+        for row, text in enumerate(texts):
+            for token in tokenize(text):
+                digest = hashlib.md5(token.encode()).digest()
+                vectors[row, int.from_bytes(digest[:4], "little") % self.dims] += 1.0
+        return normalize(vectors)
+
+
+@pytest.fixture
+def fake_embedder() -> FakeEmbedder:
+    return FakeEmbedder()
