@@ -1,0 +1,35 @@
+{{pagebanner|Examplestad banner.jpg|caption=A made-up harbour town}}
+'''Examplestad''' is a small, entirely fictional harbour town on the coast of [[Imaginaria]], known for its [[Lighthouse walks|lighthouse walks]] and fish soup.<ref>Invented for the Wanderlust test suite.</ref>
+[[File:Examplestad harbour.jpg|thumb|The harbour at dusk]]
+
+==Understand==
+The town grew around a fishing harbour. Summers are mild and winters are windy.
+<!-- an editor comment that should never appear in the text -->
+
+==Get around==
+Most sights are within walking distance of the harbour.
+
+===By tram===
+A single heritage tram line runs from the station to the lighthouse every 15 minutes.
+
+===By bicycle===
+Bicycles can be rented at the station.
+
+==See==
+* {{see
+| name=Old Lighthouse | alt=Vieux Phare | url=https://example.org/lighthouse
+| address=1 Cliff Road | lat=12.3456 | long=-7.6543 | directions=end of the tram line
+| phone=+00 123 456 | hours=09:00-18:00 | price=Adult 5 coins, children free
+| content=A striped 19th-century lighthouse with a [[viewpoint]] at the top. Climb the 120 steps at sunset.
+}}
+* {{see | name=Clock Square | lat= | long= | content=The town's main square, with a clock that is always five minutes fast. }}
+
+==Eat==
+Fish soup is the local speciality.
+* {{eat | name=Harbour Kitchen | price=Mains 12-18 coins | hours=Tu-Su 12:00-22:00 | lat=12.3401 | long=not-a-number | content=Family-run, good fish soup. }}
+* {{listing | type=drink | name=The Salty Mug | content=Cosy pub by the pier. }}
+
+==Go next==
+* {{marker|type=city|name=[[Otherville]]|lat=12.5|long=-7.5}} – a day trip by ferry.
+
+[[Category:Fictional places]]

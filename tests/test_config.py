@@ -16,6 +16,7 @@ def clean_env(monkeypatch):
         "WANDERLUST_LLM_MODEL",
         "WANDERLUST_WIKIVOYAGE_LANGUAGE",
         "WANDERLUST_DATA_DIR",
+        "WANDERLUST_WIKIVOYAGE_CACHE_TTL_HOURS",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -30,6 +31,7 @@ def test_defaults():
     assert settings.llm_model is None
     assert settings.wikivoyage_language == "en"
     assert settings.data_dir == Path(".wanderlust")
+    assert settings.wikivoyage_cache_ttl_hours == 168
 
 
 def test_reads_prefixed_env_vars(monkeypatch):
@@ -72,5 +74,11 @@ def test_rejects_unknown_provider(monkeypatch):
 
 def test_rejects_invalid_language_code(monkeypatch):
     monkeypatch.setenv("WANDERLUST_WIKIVOYAGE_LANGUAGE", "English")
+    with pytest.raises(ValidationError):
+        make_settings()
+
+
+def test_rejects_negative_cache_ttl(monkeypatch):
+    monkeypatch.setenv("WANDERLUST_WIKIVOYAGE_CACHE_TTL_HOURS", "-1")
     with pytest.raises(ValidationError):
         make_settings()
