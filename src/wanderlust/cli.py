@@ -13,6 +13,8 @@ from rich.table import Table
 
 from wanderlust import __version__
 from wanderlust.config import MissingAPIKeyError, Settings
+from wanderlust.llm.factory import build_provider, default_model
+from wanderlust.llm.types import Conversation, LLMError
 from wanderlust.retrieval.builder import BuildReport, build_index
 from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
 from wanderlust.retrieval.index import GuideIndex, IndexStore
@@ -72,7 +74,12 @@ def config() -> None:
     table.add_column("Setting", style="bold")
     table.add_column("Value")
     table.add_row("LLM provider", settings.llm_provider.value)
-    table.add_row("LLM model", settings.llm_model or "(provider default)")
+    table.add_row(
+        "LLM model", settings.llm_model or f"{default_model(settings.llm_provider)} (default)"
+    )
+    table.add_row(
+        "LLM effort", settings.llm_effort.value if settings.llm_effort else "(provider default)"
+    )
     table.add_row(
         "API key",
         "[green]configured[/green]" if settings.has_api_key() else "[yellow]missing[/yellow]",
@@ -342,6 +349,39 @@ def _print_results(guide_index: GuideIndex, results, mode: SearchMode) -> None:
         f"\n[dim]{mode.value} search over {guide_index.meta.chunk_count} passages · "
         f"Wikivoyage content, {chunk.attribution.license}[/dim]"
     )
+
+
+CHAT_SYSTEM_PROMPT = (
+    "You are Wanderlust, a friendly and practical travel assistant. "
+    "Answer concisely. If you are not sure about a fact such as prices or opening "
+    "hours, say so instead of guessing."
+)
+
+
+@app.command()
+def chat(
+    message: Annotated[str, typer.Argument(help='What to ask, e.g. "Is Lisbon hilly?"')],
+) -> None:
+    """Ask the configured language model a question (a quick check that your setup works).
+
+    Answers here are not grounded in the travel guides yet; that comes with 'wanderlust ask'.
+    """
+    settings = _load_settings()
+    try:
+        provider = build_provider(settings)
+    except MissingAPIKeyError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    conversation = Conversation(system=CHAT_SYSTEM_PROMPT).add_user(message)
+    console.print(f"[dim]{escape(provider.name)} · {escape(provider.model)}[/dim]")
+    try:
+        for piece in provider.stream(conversation, max_tokens=4000):
+            console.print(piece, end="", markup=False, highlight=False)
+    except LLMError as exc:
+        console.print(f"\n[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+    console.print()
 
 
 @app.command()
