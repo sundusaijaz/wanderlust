@@ -240,3 +240,46 @@ def test_config_shows_semantic_search_choice(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-secret-value")
     result = runner.invoke(app, ["config"])
     assert "openai:text-embedding-3-small" in result.output
+
+
+@pytest.fixture
+def scripted_llm(monkeypatch):
+    from wanderlust.llm.fake import ScriptedProvider
+
+    provider = ScriptedProvider(["Yes, Lisbon is very hilly.\nWear comfy [shoes]."])
+    monkeypatch.setattr("wanderlust.cli.build_provider", lambda settings: provider)
+    return provider
+
+
+def test_chat_streams_the_answer(scripted_llm):
+    result = runner.invoke(app, ["chat", "Is Lisbon hilly?"])
+    assert result.exit_code == 0, result.output
+    assert "fake · scripted" in result.output
+    assert "Yes, Lisbon is very hilly.\nWear comfy [shoes]." in result.output
+
+    conversation, tools = scripted_llm.requests[0]
+    assert "Wanderlust" in conversation.system
+    assert conversation.turns[0].text == "Is Lisbon hilly?"
+    assert tools == []
+
+
+def test_chat_without_api_key():
+    result = runner.invoke(app, ["chat", "hello"])
+    assert result.exit_code == 1
+    assert "OPENAI_API_KEY" in result.output
+
+
+def test_chat_reports_provider_errors(monkeypatch):
+    from wanderlust.llm.fake import ScriptedProvider
+
+    monkeypatch.setattr("wanderlust.cli.build_provider", lambda settings: ScriptedProvider([]))
+    result = runner.invoke(app, ["chat", "hello"])
+    assert result.exit_code == 1
+    assert "no responses left" in result.output
+
+
+def test_config_shows_default_model_and_effort(monkeypatch):
+    monkeypatch.setenv("WANDERLUST_LLM_PROVIDER", "anthropic")
+    result = runner.invoke(app, ["config"])
+    assert "claude-opus-5-5 (default)" in result.output
+    assert "LLM effort" in result.output
