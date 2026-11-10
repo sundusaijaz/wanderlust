@@ -12,7 +12,7 @@ and lands through its own pull request.
       and cache them locally.
 - [x] **M3: Retrieval.** Chunk articles, embed them and store them in a local
       vector index, with hybrid (keyword + vector) search.
-- [ ] **M4: LLM provider layer.** One interface for OpenAI and Anthropic,
+- [x] **M4: LLM provider layer.** One interface for OpenAI and Anthropic,
       with streaming and a fake provider for tests.
 - [ ] **M5: Grounded Q&A.** Answer travel questions from retrieved passages
       with inline citations back to Wikivoyage.

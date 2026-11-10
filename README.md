@@ -68,8 +68,8 @@ flowchart LR
 | Configuration and command-line interface | ✅ Done |
 | Wikivoyage client with caching (`wanderlust guide`) | ✅ Done |
 | Hybrid search over guides and districts (`wanderlust search`) | ✅ Done |
-| OpenAI / Anthropic provider layer | 🚧 Next ([#3](https://github.com/sundusaijaz/wanderlust/issues/3)) |
-| Grounded Q&A with citations | 📋 Planned ([#4](https://github.com/sundusaijaz/wanderlust/issues/4)) |
+| OpenAI / Anthropic provider layer (`wanderlust chat`) | ✅ Done |
+| Grounded Q&A with citations | 🚧 Next ([#4](https://github.com/sundusaijaz/wanderlust/issues/4)) |
 | Weather, geocoding and distance tools | 📋 Planned ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
 | Planning agent | 📋 Planned ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
 | Web UI, map view, export, Docker | 📋 Planned ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
@@ -140,6 +140,27 @@ Without either, Wanderlust falls back to keyword search and tells you so.
 
 <sub>Screenshots use a made-up town from the test suite.</sub>
 
+### Choose your model
+
+Wanderlust works with Claude (Anthropic) or OpenAI models. Set these in `.env`:
+
+| Setting | Values | Default |
+|---|---|---|
+| `WANDERLUST_LLM_PROVIDER` | `anthropic` or `openai` | `openai` |
+| `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` | key for the provider you picked | — |
+| `WANDERLUST_LLM_MODEL` | any model the provider offers | `claude-opus-5-5` / `gpt-5-mini` |
+| `WANDERLUST_LLM_EFFORT` | `low`, `medium`, `high`, `xhigh`, `max` | `medium` for Claude |
+
+Check that it works:
+
+```bash
+uv run wanderlust chat "Is Lisbon a hilly city?"
+```
+
+With Claude models that support it, Wanderlust turns on the API's server-side
+refusal fallback, so a request declined by a safety classifier is retried on a
+suitable fallback model automatically.
+
 ### Check your configuration
 
 API keys are never printed:
@@ -155,7 +176,7 @@ API keys are never printed:
 | Language | Python 3.11+, managed with [uv](https://docs.astral.sh/uv/) |
 | Command line | [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/) |
 | Configuration | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
-| Language models | OpenAI or Anthropic APIs |
+| Language models | Official [Anthropic](https://github.com/anthropics/anthropic-sdk-python) and [OpenAI](https://github.com/openai/openai-python) Python SDKs behind one small interface |
 | Travel data | [Wikivoyage](https://www.wikivoyage.org/) via the MediaWiki API, parsed with [mwparserfromhell](https://github.com/earwig/mwparserfromhell) |
 | Search | BM25 (built in), NumPy, OpenAI embeddings or [fastembed](https://github.com/qdrant/fastembed) |
 | Weather and places | [Open-Meteo](https://open-meteo.com/) (free, no key) |
