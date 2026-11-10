@@ -17,6 +17,16 @@ class LLMProvider(StrEnum):
     ANTHROPIC = "anthropic"
 
 
+class Effort(StrEnum):
+    """How hard the model should think (more effort = better answers, more tokens)."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    XHIGH = "xhigh"
+    MAX = "max"
+
+
 class EmbeddingProvider(StrEnum):
     """How guide passages are turned into vectors for semantic search."""
 
@@ -50,6 +60,10 @@ class Settings(BaseSettings):
     llm_model: str | None = Field(
         default=None,
         description="Model name. Leave empty to use the provider's default.",
+    )
+    llm_effort: Effort | None = Field(
+        default=None,
+        description="Thinking effort. Leave empty for Wanderlust's per-provider default.",
     )
     embedding_provider: EmbeddingProvider = EmbeddingProvider.AUTO
     embedding_model: str | None = Field(

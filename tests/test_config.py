@@ -19,6 +19,7 @@ def clean_env(monkeypatch):
         "WANDERLUST_WIKIVOYAGE_CACHE_TTL_HOURS",
         "WANDERLUST_EMBEDDING_PROVIDER",
         "WANDERLUST_EMBEDDING_MODEL",
+        "WANDERLUST_LLM_EFFORT",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -31,6 +32,7 @@ def test_defaults():
     settings = make_settings()
     assert settings.llm_provider is LLMProvider.OPENAI
     assert settings.llm_model is None
+    assert settings.llm_effort is None
     assert settings.wikivoyage_language == "en"
     assert settings.data_dir == Path(".wanderlust")
     assert settings.wikivoyage_cache_ttl_hours == 168
@@ -84,5 +86,11 @@ def test_rejects_invalid_language_code(monkeypatch):
 
 def test_rejects_negative_cache_ttl(monkeypatch):
     monkeypatch.setenv("WANDERLUST_WIKIVOYAGE_CACHE_TTL_HOURS", "-1")
+    with pytest.raises(ValidationError):
+        make_settings()
+
+
+def test_rejects_unknown_effort(monkeypatch):
+    monkeypatch.setenv("WANDERLUST_LLM_EFFORT", "extreme")
     with pytest.raises(ValidationError):
         make_settings()
