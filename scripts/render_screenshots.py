@@ -98,6 +98,66 @@ class DemoEmbedder:
         return normalize(vectors)
 
 
+DEMO_PLACES = {
+    "examplestad": {
+        "name": "Examplestad",
+        "latitude": 12.34,
+        "longitude": -7.65,
+        "country": "Imaginaria",
+        "admin1": "Coast Province",
+    },
+    "otherville": {
+        "name": "Otherville",
+        "latitude": 12.5,
+        "longitude": -7.5,
+        "country": "Imaginaria",
+        "admin1": "Coast Province",
+    },
+}
+
+
+def demo_tools_client(data_dir):
+    """Made-up places and weather, with 'today' fixed so screenshots are reproducible."""
+    from datetime import UTC, date, datetime
+
+    from wanderlust.tools.http import OpenMeteoClient
+
+    def api(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if request.url.host.startswith("geocoding"):
+            match = DEMO_PLACES.get(params["name"].casefold())
+            return httpx.Response(200, json={"results": [match]} if match else {})
+        start = date.fromisoformat(params["start_date"])
+        end = date.fromisoformat(params["end_date"])
+        days = [date.fromordinal(d) for d in range(start.toordinal(), end.toordinal() + 1)]
+        pattern = [
+            (1, 22.1, 14.2, 0.0, 5),
+            (3, 20.4, 13.8, 0.2, 20),
+            (63, 17.0, 12.9, 9.4, 90),
+            (80, 18.3, 13.1, 2.6, 60),
+            (0, 23.0, 14.9, 0.0, 0),
+        ]
+        rows = [pattern[i % len(pattern)] for i in range(len(days))]
+        return httpx.Response(
+            200,
+            json={
+                "daily": {
+                    "time": [d.isoformat() for d in days],
+                    "weather_code": [r[0] for r in rows],
+                    "temperature_2m_max": [r[1] for r in rows],
+                    "temperature_2m_min": [r[2] for r in rows],
+                    "precipitation_sum": [r[3] for r in rows],
+                    "precipitation_probability_max": [r[4] for r in rows],
+                }
+            },
+        )
+
+    return OpenMeteoClient(
+        http_client=httpx.Client(transport=httpx.MockTransport(api)),
+        clock=lambda: datetime(2026, 11, 12, 9, tzinfo=UTC),
+    )
+
+
 class SilentStatus:
     def update(self, *args, **kwargs) -> None:
         pass
@@ -121,6 +181,7 @@ def render(
     cli.build_loader = demo_loader
     cli.build_embedder = embedder_factory or REAL_BUILD_EMBEDDER
     cli.build_provider = lambda settings: ScriptedProvider([DEMO_ANSWER], model="demo-model")
+    cli.build_tools_client = demo_tools_client
     with demo_environment():
         for args in commands:
             console.print(
@@ -169,6 +230,12 @@ def main() -> None:
             "wanderlust ask",
             width=96,
             embedder_factory=lambda settings: DemoEmbedder(),
+        ),
+        render(
+            [["weather", "Examplestad", "--days", "5"], ["distance", "Examplestad", "Otherville"]],
+            "cli-weather.svg",
+            "wanderlust weather",
+            width=96,
         ),
     ]
     for path in paths:

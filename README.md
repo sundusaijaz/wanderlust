@@ -70,8 +70,8 @@ flowchart LR
 | Hybrid search over guides and districts (`wanderlust search`) | ✅ Done |
 | OpenAI / Anthropic provider layer (`wanderlust chat`) | ✅ Done |
 | Grounded Q&A with citations (`wanderlust ask`) | ✅ Done |
-| Weather, geocoding and distance tools | 🚧 Next ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
-| Planning agent | 📋 Planned ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
+| Weather, place lookup and distance tools (`wanderlust weather`, `distance`) | ✅ Done |
+| Planning agent | 🚧 Next ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
 | Web UI, map view, export, Docker | 📋 Planned ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
 
 See the full [roadmap](ROADMAP.md).
@@ -165,6 +165,31 @@ How Wanderlust keeps answers honest:
 - Citations are checked: a number that matches no passage is flagged as a warning.
 - Passage text is treated as reference material, never as instructions.
 
+### Check the weather and distances
+
+These are the tools the planning agent will use, and you can call them directly:
+
+```bash
+uv run wanderlust weather Lisbon                        # forecast for the next 5 days
+uv run wanderlust weather Porto --from 2027-04-10 -d 4  # typical weather for later dates
+uv run wanderlust distance Lisbon Sintra                # rough travel times
+```
+
+<p align="center">
+  <img src="docs/assets/cli-weather.svg" alt="Terminal showing a five-day weather table with rainy days marked as indoor days, and travel-time estimates between two towns" width="720">
+</p>
+
+<sub>Screenshot uses made-up places and weather so it can be regenerated offline.</sub>
+
+- **Forecasts** cover today and the next 15 days. For later dates you get
+  **typical weather**: the same dates averaged over the last three years, clearly
+  labelled as not a forecast.
+- Rainy days are flagged as **indoor days** so plans can swap in museums and cafés.
+- **Travel times** are rough estimates from straight-line distance (blending city
+  and intercity speeds), not routes, and say so.
+- Responses are cached on disk (forecasts for an hour, places and past weather
+  for a month), so repeated questions don't hit the free API again.
+
 ### Choose your model
 
 Wanderlust works with Claude (Anthropic) or OpenAI models. Set these in `.env`:
@@ -226,6 +251,11 @@ available under the [Creative Commons Attribution-ShareAlike
 license](https://creativecommons.org/licenses/by-sa/4.0/). Wanderlust fetches it
 at runtime and does not redistribute it in this repository. Generated
 itineraries link to the Wikivoyage articles they draw on.
+
+Weather and place data come from [Open-Meteo](https://open-meteo.com/) under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Open-Meteo's free API
+is intended for non-commercial use; Wanderlust caches responses to keep its
+request volume low.
 
 ## 📄 License
 
