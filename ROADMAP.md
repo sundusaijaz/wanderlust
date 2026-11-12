@@ -16,7 +16,7 @@ and lands through its own pull request.
       with streaming and a fake provider for tests.
 - [x] **M5: Grounded Q&A.** Answer travel questions from retrieved passages
       with inline citations back to Wikivoyage.
-- [ ] **M6: Tools.** Weather forecast and geocoding through Open-Meteo, plus
+- [x] **M6: Tools.** Weather forecast and geocoding through Open-Meteo, plus
       travel-time estimates between places.
 - [ ] **M7: Planning agent.** A tool-calling agent loop that turns a trip
       request into a structured, day-by-day itinerary.
