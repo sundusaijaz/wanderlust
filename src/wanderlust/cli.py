@@ -15,6 +15,7 @@ from wanderlust import __version__
 from wanderlust.config import MissingAPIKeyError, Settings
 from wanderlust.llm.factory import build_provider, default_model
 from wanderlust.llm.types import Conversation, LLMError
+from wanderlust.qa.answerer import DEFAULT_PASSAGES, Answer, GroundedAnswerer
 from wanderlust.retrieval.builder import BuildReport, build_index
 from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
 from wanderlust.retrieval.index import GuideIndex, IndexStore
@@ -353,6 +354,99 @@ def _print_results(guide_index: GuideIndex, results, mode: SearchMode) -> None:
     console.print(
         f"\n[dim]{mode.value} search over {guide_index.meta.chunk_count} passages · "
         f"Wikivoyage content, {chunk.attribution.license}[/dim]"
+    )
+
+
+@app.command()
+def ask(
+    place: Annotated[str, typer.Argument(help='Destination, e.g. "Lisbon".')],
+    question: Annotated[
+        str, typer.Argument(help='Your question, e.g. "Where can I try custard tarts?"')
+    ],
+    passages: Annotated[
+        int,
+        typer.Option(
+            "--passages", "-k", min=1, max=20, help="How many guide passages to give the model."
+        ),
+    ] = DEFAULT_PASSAGES,
+    mode: Annotated[
+        SearchMode, typer.Option("--mode", "-m", help="hybrid, keyword or vector.")
+    ] = SearchMode.HYBRID,
+    show_passages: Annotated[
+        bool, typer.Option("--show-passages", help="Also print the passages sent to the model.")
+    ] = False,
+) -> None:
+    """Answer a question from a destination's travel guide, citing its sources."""
+    settings = _load_settings()
+    embedder = _embedder_or_exit(settings)
+    try:
+        provider = build_provider(settings)
+    except MissingAPIKeyError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    guide_index = _index_for(place, settings, embedder)
+    destination = guide_index.meta.destination
+    answerer = GroundedAnswerer(
+        Searcher(guide_index, embedder), provider, passages=passages, mode=mode
+    )
+    try:
+        prepared = answerer.prepare(question)
+    except (SearchError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    if prepared.search.note:
+        console.print(f"[yellow]{escape(prepared.search.note)}[/yellow]")
+    if not prepared.has_context:
+        console.print(
+            f"No passages in the {escape(destination)} guide match that question, "
+            "so there is nothing to answer from. Try other words or 'wanderlust guide'."
+        )
+        raise typer.Exit(code=1)
+
+    if show_passages:
+        for source in prepared.sources:
+            console.print(f"[bold][{source.number}][/bold] {escape(source.label)}")
+            console.print(f"[dim]{escape(_preview(source.chunk.text, 240))}[/dim]")
+        console.print()
+
+    console.print(
+        f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
+        f"{len(prepared.sources)} passages from the {escape(destination)} guide[/dim]\n"
+    )
+    pieces: list[str] = []
+    try:
+        for piece in answerer.stream(prepared):
+            pieces.append(piece)
+            console.print(piece, end="", markup=False, highlight=False)
+    except LLMError as exc:
+        console.print(f"\n[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+    console.print()
+    _print_sources(answerer.finish(prepared, "".join(pieces)))
+
+
+def _print_sources(answer: Answer) -> None:
+    report = answer.citations
+    if report.cited:
+        console.print("\n[bold]Sources[/bold]")
+        for source in report.cited:
+            console.print(f"[bold][{source.number}][/bold] {escape(source.label)}")
+            console.print(f"    [dim]{escape(source.url)}[/dim]")
+    elif answer.covered:
+        console.print("\n[yellow]The answer cites no passages. It was given these:[/yellow]")
+        for source in answer.sources:
+            console.print(f"[{source.number}] {escape(source.label)}", markup=False)
+    if report.unknown:
+        numbers = ", ".join(f"[{n}]" for n in report.unknown)
+        console.print(
+            f"[yellow]Note: the answer cites {numbers}, which is not one of the passages "
+            "it was given. Treat that part with care.[/yellow]"
+        )
+    console.print(
+        "\n[dim]Wikivoyage content, CC BY-SA 4.0. "
+        "Check prices and opening hours before you go.[/dim]"
     )
 
 
