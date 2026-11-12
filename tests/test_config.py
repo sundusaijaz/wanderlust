@@ -94,3 +94,12 @@ def test_rejects_unknown_effort(monkeypatch):
     monkeypatch.setenv("WANDERLUST_LLM_EFFORT", "extreme")
     with pytest.raises(ValidationError):
         make_settings()
+
+
+def test_env_example_ships_no_placeholder_keys():
+    """Placeholder keys would make 'auto' embeddings call OpenAI with a fake key."""
+    example = Path(__file__).parent.parent / ".env.example"
+    settings = Settings(_env_file=example)
+    assert settings.openai_api_key is None or not settings.openai_api_key.get_secret_value()
+    assert settings.anthropic_api_key is None or not settings.anthropic_api_key.get_secret_value()
+    assert not settings.has_api_key()
