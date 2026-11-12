@@ -20,6 +20,7 @@ from wanderlust.retrieval.builder import BuildReport, build_index
 from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
 from wanderlust.retrieval.index import GuideIndex, IndexStore
 from wanderlust.retrieval.search import Searcher, SearchError, SearchMode
+from wanderlust.streaming import WordWrapper
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
 from wanderlust.wikivoyage.service import build_loader
@@ -416,15 +417,26 @@ def ask(
         f"{len(prepared.sources)} passages from the {escape(destination)} guide[/dim]\n"
     )
     pieces: list[str] = []
+    wrapper = _wrapper()
     try:
         for piece in answerer.stream(prepared):
             pieces.append(piece)
-            console.print(piece, end="", markup=False, highlight=False)
+            wrapper.feed(piece)
+        wrapper.close()
     except LLMError as exc:
         console.print(f"\n[red]{escape(str(exc))}[/red]")
         raise typer.Exit(code=1) from exc
     console.print()
     _print_sources(answerer.finish(prepared, "".join(pieces)))
+
+
+def _wrapper() -> WordWrapper:
+    """Write streamed model text to the console, wrapped between words."""
+
+    def write(text: str) -> None:
+        console.print(text, end="", markup=False, highlight=False, soft_wrap=True)
+
+    return WordWrapper(write, width=max(20, console.width))
 
 
 def _print_sources(answer: Answer) -> None:
@@ -474,9 +486,11 @@ def chat(
 
     conversation = Conversation(system=CHAT_SYSTEM_PROMPT).add_user(message)
     console.print(f"[dim]{escape(provider.name)} · {escape(provider.model)}[/dim]")
+    wrapper = _wrapper()
     try:
         for piece in provider.stream(conversation, max_tokens=4000):
-            console.print(piece, end="", markup=False, highlight=False)
+            wrapper.feed(piece)
+        wrapper.close()
     except LLMError as exc:
         console.print(f"\n[red]{escape(str(exc))}[/red]")
         raise typer.Exit(code=1) from exc
