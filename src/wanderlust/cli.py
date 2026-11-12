@@ -297,6 +297,15 @@ def index(
     console.print(f'[dim]Try: wanderlust search "{escape(meta.destination)}" "museums"[/dim]')
 
 
+def _index_for(place: str, settings: Settings, embedder: Embedder | None) -> GuideIndex:
+    """The saved index for a destination, building and saving it first if needed."""
+    guide_index = IndexStore(settings.data_dir).load(settings.wikivoyage_language, place)
+    if guide_index is None:
+        console.print(f"[dim]No index for {escape(place)} yet; building it now.[/dim]")
+        guide_index = _build_and_save(place, settings, embedder).index
+    return guide_index
+
+
 @app.command()
 def search(
     place: Annotated[str, typer.Argument(help='Destination, e.g. "Lisbon".')],
@@ -309,11 +318,7 @@ def search(
     """Search a destination's guides. Builds the index first if needed."""
     settings = _load_settings()
     embedder = _embedder_or_exit(settings)
-
-    guide_index = IndexStore(settings.data_dir).load(settings.wikivoyage_language, place)
-    if guide_index is None:
-        console.print(f"[dim]No index for {escape(place)} yet; building it now.[/dim]")
-        guide_index = _build_and_save(place, settings, embedder).index
+    guide_index = _index_for(place, settings, embedder)
 
     try:
         response = Searcher(guide_index, embedder).search(query, k=top, mode=mode)
