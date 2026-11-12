@@ -19,12 +19,22 @@ from rich.console import Console
 from rich.markup import escape
 
 import wanderlust.cli as cli
+from wanderlust.llm.fake import ScriptedProvider
 from wanderlust.wikivoyage.cache import ArticleCache
 from wanderlust.wikivoyage.client import WikivoyageClient
 from wanderlust.wikivoyage.service import GuideLoader
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "docs" / "assets"
+# A hand-written answer for the 'ask' screenshot (no API key or model call needed).
+# It only states facts from the made-up guide and cites the passages it uses.
+DEMO_ANSWER = (
+    "Take the heritage tram from the station: it runs to the lighthouse every 15 minutes "
+    "[1]. The Old Lighthouse is open 09:00-18:00 and costs 5 coins for adults (children "
+    "go free); climb the 120 steps at sunset for the best view [3]. Opening hours and "
+    "prices can change, so check before you go."
+)
+
 # Made-up guide from the test suite, so screenshots never reproduce Wikivoyage text.
 DEMO_ARTICLE = ROOT / "tests" / "fixtures" / "examplestad.wikitext"
 
@@ -110,6 +120,7 @@ def render(
     cli.console = console
     cli.build_loader = demo_loader
     cli.build_embedder = embedder_factory or REAL_BUILD_EMBEDDER
+    cli.build_provider = lambda settings: ScriptedProvider([DEMO_ANSWER], model="demo-model")
     with demo_environment():
         for args in commands:
             console.print(
@@ -141,6 +152,21 @@ def main() -> None:
             ],
             "cli-search.svg",
             "wanderlust search",
+            width=96,
+            embedder_factory=lambda settings: DemoEmbedder(),
+        ),
+        render(
+            [
+                [
+                    "ask",
+                    "Examplestad",
+                    "How do I get to the lighthouse, and when is it open?",
+                    "-k",
+                    "3",
+                ]
+            ],
+            "cli-ask.svg",
+            "wanderlust ask",
             width=96,
             embedder_factory=lambda settings: DemoEmbedder(),
         ),
