@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -16,15 +17,26 @@ class TravelMode(StrEnum):
     DRIVE = "drive"
 
 
-# Deliberately simple assumptions: real routes are longer than straight lines
-# ("detour"), and each mode has an average door-to-door speed plus a fixed
-# overhead (waiting for a tram, finding parking).
-_MODES: dict[TravelMode, tuple[float, float, float]] = {
-    #                  speed km/h, detour factor, overhead minutes
-    TravelMode.WALK: (4.5, 1.3, 0.0),
-    TravelMode.TRANSIT: (18.0, 1.4, 8.0),
-    TravelMode.DRIVE: (30.0, 1.4, 5.0),
+# Deliberately simple assumptions. Real routes are longer than straight lines
+# (the detour factor), and each mode has a door-to-door speed plus a fixed
+# overhead (waiting for a tram, finding parking). Short trips use city values,
+# long trips intercity values (trains, motorways), blended in between.
+@dataclass(frozen=True)
+class _ModeProfile:
+    city_kmh: float
+    intercity_kmh: float
+    city_detour: float
+    intercity_detour: float
+    overhead_min: float
+
+
+_MODES: dict[TravelMode, _ModeProfile] = {
+    TravelMode.WALK: _ModeProfile(4.5, 4.5, 1.3, 1.3, 0.0),
+    TravelMode.TRANSIT: _ModeProfile(18.0, 80.0, 1.4, 1.2, 8.0),
+    TravelMode.DRIVE: _ModeProfile(30.0, 90.0, 1.4, 1.2, 5.0),
 }
+CITY_KM = 3.0  # up to here: pure city values
+INTERCITY_KM = 50.0  # from here: pure intercity values
 MAX_WALK_KM = 6.0  # beyond this, walking is not suggested
 
 
@@ -62,8 +74,11 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def estimate_minutes(km: float, mode: TravelMode) -> int:
-    speed, detour, overhead = _MODES[mode]
-    return max(1, round(km * detour / speed * 60 + overhead))
+    profile = _MODES[mode]
+    blend = min(1.0, max(0.0, (km - CITY_KM) / (INTERCITY_KM - CITY_KM)))
+    speed = profile.city_kmh + blend * (profile.intercity_kmh - profile.city_kmh)
+    detour = profile.city_detour + blend * (profile.intercity_detour - profile.city_detour)
+    return max(1, round(km * detour / speed * 60 + profile.overhead_min))
 
 
 def distance_report(lat1: float, lon1: float, lat2: float, lon2: float) -> DistanceReport:

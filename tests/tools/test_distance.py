@@ -30,7 +30,6 @@ def test_haversine_rejects_invalid_coordinates(coords):
 
 def test_estimates_grow_with_distance_and_include_overheads():
     assert estimate_minutes(1.0, TravelMode.WALK) == 17  # 1.3 km at 4.5 km/h
-    assert estimate_minutes(10, TravelMode.TRANSIT) == 55
     assert estimate_minutes(0.0, TravelMode.WALK) == 1  # never zero
     assert estimate_minutes(5, TravelMode.DRIVE) > estimate_minutes(2, TravelMode.DRIVE)
 
@@ -51,3 +50,26 @@ def test_long_trips_drop_walking():
     lisbon_to_porto = distance_report(38.7223, -9.1393, 41.1579, -8.6291)
     assert lisbon_to_porto.straight_line_km == pytest.approx(274, abs=3)
     assert not lisbon_to_porto.walkable
+
+
+@pytest.mark.parametrize(
+    ("km", "mode", "low", "high"),
+    [
+        # Rossio to Belém by tram (~7 km): about half an hour.
+        (7.0, TravelMode.TRANSIT, 25, 40),
+        # Lisbon to Sintra (~21 km): train about 40-50 min door to door, car about 35 min.
+        (21.5, TravelMode.TRANSIT, 40, 60),
+        (21.5, TravelMode.DRIVE, 30, 45),
+        # Lisbon to Porto (~274 km): about 3-4.5 hours by train or car.
+        (274, TravelMode.TRANSIT, 180, 270),
+        (274, TravelMode.DRIVE, 180, 240),
+    ],
+)
+def test_estimates_are_plausible_for_known_trips(km, mode, low, high):
+    assert low <= estimate_minutes(km, mode) <= high
+
+
+def test_estimates_never_decrease_with_distance():
+    for mode in TravelMode:
+        times = [estimate_minutes(km / 2, mode) for km in range(0, 400)]
+        assert times == sorted(times)
