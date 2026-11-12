@@ -139,3 +139,12 @@ def test_build_index_caps_district_count(loader):
     report = build_index("Bigville", loader, None, max_districts=1)
     assert [a.title for a in report.articles] == ["Bigville", "Bigville/Old Town"]
     assert report.skipped == ["Bigville/Docks", "Bigville/Old Quarter"]
+
+
+def test_mode_given_as_string_is_honoured(report, fake_embedder):
+    searcher = Searcher(report.index, fake_embedder)
+    response = searcher.search("snorkelling", mode="keyword")
+    assert response.mode is SearchMode.KEYWORD
+    assert response.results == []  # vector search would always return something
+    with pytest.raises(ValueError):
+        searcher.search("tram", mode="fuzzy")

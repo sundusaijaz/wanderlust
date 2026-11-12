@@ -78,8 +78,10 @@ class Searcher:
         return None
 
     def search(
-        self, query: str, *, k: int = 5, mode: SearchMode = SearchMode.HYBRID
+        self, query: str, *, k: int = 5, mode: SearchMode | str = SearchMode.HYBRID
     ) -> SearchResponse:
+        # Normalise first: the checks below compare enum members by identity.
+        mode = SearchMode(mode)
         if not query.strip():
             raise ValueError("query must not be empty")
         if k <= 0:
