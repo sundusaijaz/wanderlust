@@ -100,3 +100,83 @@ def test_parse_daily_without_daily_block():
 )
 def test_is_wet(day, wet):
     assert day.is_wet is wet
+
+
+def archive_api(request):
+    """Past weather: wet in odd years, dry in even years, warmer each year."""
+    params = request.url.params
+    start, end = date.fromisoformat(params["start_date"]), date.fromisoformat(params["end_date"])
+    days = [date.fromordinal(d) for d in range(start.toordinal(), end.toordinal() + 1)]
+    wet = start.year % 2 == 1
+    return httpx.Response(
+        200,
+        json={
+            "daily": {
+                "time": [d.isoformat() for d in days],
+                "weather_code": [63 if wet else 1 for _ in days],
+                "temperature_2m_max": [15.0 + (start.year - 2023) for _ in days],
+                "temperature_2m_min": [9.0 for _ in days],
+                "precipitation_sum": [6.0 if wet else 0.0 for _ in days],
+            }
+        },
+    )
+
+
+def test_typical_weather_averages_previous_years(make_meteo):
+    client, requests = make_meteo(archive_api)
+    report = WeatherService(client).typical(38.72, -9.14, date(2027, 3, 1), date(2027, 3, 2))
+
+    assert report.kind == "typical"
+    assert "2024-2026" in report.note and "not a forecast" in report.note
+    assert sorted(r.url.params["start_date"] for r in requests) == [
+        "2024-03-01",
+        "2025-03-01",
+        "2026-03-01",
+    ]
+    day = report.days[0]
+    assert day.date == date(2027, 3, 1)
+    assert day.temp_max_c == 17.0  # mean of 16, 17, 18
+    assert day.temp_min_c == 9.0
+    assert day.precipitation_probability == 33  # wet in 1 of 3 years (2025)
+    assert day.precipitation_mm == 2.0
+    assert day.weather_code == 1  # dry was more common
+
+
+def test_typical_weather_handles_leap_day(make_meteo):
+    client, requests = make_meteo(archive_api)
+    report = WeatherService(client).typical(0, 0, date(2028, 2, 29), date(2028, 2, 29), years=1)
+    assert report.days[0].date == date(2028, 2, 29)
+    assert requests[0].url.params["start_date"] == "2026-02-28"
+
+
+def test_typical_weather_is_cached(make_meteo):
+    client, requests = make_meteo(archive_api)
+    service = WeatherService(client)
+    service.typical(0, 0, date(2027, 3, 1), date(2027, 3, 3))
+    service.typical(0, 0, date(2027, 3, 1), date(2027, 3, 3))
+    assert len(requests) == 3
+
+
+def test_for_dates_chooses_forecast_or_typical(make_meteo):
+    def api(request):
+        return (forecast_api if "forecast" in str(request.url) else archive_api)(request)
+
+    client, _ = make_meteo(api)
+    service = WeatherService(client)
+    assert service.for_dates(0, 0, date(2026, 11, 13), date(2026, 11, 14)).kind == "forecast"
+    assert service.for_dates(0, 0, date(2027, 3, 1), date(2027, 3, 4)).kind == "typical"
+    with pytest.raises(ValueError, match="past"):
+        service.for_dates(0, 0, date(2026, 11, 1), date(2026, 11, 2))
+
+
+def test_typical_rejects_bad_years(make_meteo):
+    client, _ = make_meteo(archive_api)
+    with pytest.raises(ValueError):
+        WeatherService(client).typical(0, 0, date(2027, 3, 1), date(2027, 3, 1), years=0)
+
+
+def test_typical_weather_skips_years_not_yet_archived(make_meteo):
+    client, requests = make_meteo(archive_api)
+    # Today is 2026-11-12 in tests: last year's 20 November is not in the archive yet.
+    WeatherService(client).typical(0, 0, date(2027, 11, 20), date(2027, 11, 21), years=2)
+    assert sorted(r.url.params["start_date"] for r in requests) == ["2024-11-20", "2025-11-20"]
