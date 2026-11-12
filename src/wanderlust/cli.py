@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date, timedelta
 from typing import Annotated
 
 import typer
@@ -21,6 +22,11 @@ from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embe
 from wanderlust.retrieval.index import GuideIndex, IndexStore
 from wanderlust.retrieval.search import Searcher, SearchError, SearchMode
 from wanderlust.streaming import WordWrapper
+from wanderlust.tools.distance import distance_report
+from wanderlust.tools.geocoding import Geocoder, Place
+from wanderlust.tools.http import ToolError
+from wanderlust.tools.registry import build_tools_client
+from wanderlust.tools.weather import WeatherService
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
 from wanderlust.wikivoyage.service import build_loader
@@ -460,6 +466,104 @@ def _print_sources(answer: Answer) -> None:
         "\n[dim]Wikivoyage content, CC BY-SA 4.0. "
         "Check prices and opening hours before you go.[/dim]"
     )
+
+
+def _locate(geocoder: Geocoder, name: str) -> Place:
+    try:
+        return geocoder.locate(name)
+    except (ToolError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+
+@app.command()
+def weather(
+    place: Annotated[str, typer.Argument(help='Where, e.g. "Lisbon".')],
+    start: Annotated[
+        str | None, typer.Option("--from", help="First day (YYYY-MM-DD). Default: today.")
+    ] = None,
+    days: Annotated[int, typer.Option("--days", "-d", min=1, max=16, help="Number of days.")] = 5,
+) -> None:
+    """Weather for a place: a forecast for the next 15 days, typical weather after that."""
+    settings = _load_settings()
+    client = build_tools_client(settings.data_dir)
+    try:
+        service = WeatherService(client)
+        try:
+            first = date.fromisoformat(start) if start else service.today()
+        except ValueError as exc:
+            console.print(f"[red]Invalid date '{escape(start or '')}'; use YYYY-MM-DD.[/red]")
+            raise typer.Exit(code=1) from exc
+        location = _locate(Geocoder(client, language=settings.wikivoyage_language), place)
+        try:
+            report = service.for_dates(
+                location.latitude, location.longitude, first, first + timedelta(days=days - 1)
+            )
+        except (ToolError, ValueError) as exc:
+            console.print(f"[red]{escape(str(exc))}[/red]")
+            raise typer.Exit(code=1) from exc
+    finally:
+        client.close()
+
+    title = "Forecast" if report.kind == "forecast" else "Typical weather"
+    table = Table(title=f"{title} for {escape(location.label)}", title_justify="left")
+    table.add_column("Date", no_wrap=True)
+    table.add_column("Weather")
+    table.add_column("Temp °C", justify="right", no_wrap=True)
+    table.add_column("Rain", justify="right", no_wrap=True)
+    table.add_column("Chance", justify="right", no_wrap=True)
+    table.add_column("")
+    for day in report.days:
+        temps = (
+            f"{day.temp_min_c:.0f} to {day.temp_max_c:.0f}"
+            if day.temp_min_c is not None and day.temp_max_c is not None
+            else "?"
+        )
+        rain = f"{day.precipitation_mm:.1f} mm" if day.precipitation_mm is not None else "?"
+        chance = (
+            f"{day.precipitation_probability}%"
+            if day.precipitation_probability is not None
+            else "?"
+        )
+        table.add_row(
+            day.date.strftime("%a %d %b"),
+            escape(day.description),
+            temps,
+            rain,
+            chance,
+            "[cyan]☔ indoor day[/cyan]" if day.is_wet else "",
+        )
+    console.print(table)
+    if report.note:
+        console.print(f"[yellow]{escape(report.note)}[/yellow]")
+    console.print(f"[dim]{escape(report.attribution)}[/dim]")
+
+
+@app.command()
+def distance(
+    origin: Annotated[str, typer.Argument(help='Start, e.g. "Lisbon".')],
+    destination: Annotated[str, typer.Argument(help='End, e.g. "Sintra".')],
+) -> None:
+    """Rough distance and travel times between two places."""
+    settings = _load_settings()
+    client = build_tools_client(settings.data_dir)
+    try:
+        geocoder = Geocoder(client, language=settings.wikivoyage_language)
+        start, end = _locate(geocoder, origin), _locate(geocoder, destination)
+    finally:
+        client.close()
+
+    report = distance_report(start.latitude, start.longitude, end.latitude, end.longitude)
+    console.print(
+        f"[bold]{escape(start.label)}[/bold] → [bold]{escape(end.label)}[/bold]: "
+        f"{report.straight_line_km:.1f} km in a straight line"
+    )
+    labels = {"walk": "🚶 Walking", "transit": "🚆 Public transport", "drive": "🚗 Driving"}
+    for estimate in report.estimates:
+        hours, minutes = divmod(estimate.minutes, 60)
+        duration = f"{hours} h {minutes} min" if hours else f"{minutes} min"
+        console.print(f"  {labels[estimate.mode.value]}: about {duration}")
+    console.print(f"[dim]{escape(report.note)}[/dim]")
 
 
 CHAT_SYSTEM_PROMPT = (

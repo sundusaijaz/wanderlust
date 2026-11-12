@@ -349,3 +349,110 @@ def test_ask_reports_llm_errors(fake_guides, semantic, monkeypatch):
     result = runner.invoke(app, ["ask", "Examplestad", "tram"])
     assert result.exit_code == 1
     assert "no responses left" in result.output
+
+
+@pytest.fixture
+def fake_open_meteo(monkeypatch):
+    """Serve made-up places and weather, with 'today' fixed at 2026-11-12."""
+    from datetime import UTC, date, datetime
+
+    import httpx
+
+    from wanderlust.tools.http import OpenMeteoClient
+
+    places = {
+        "examplestad": {
+            "name": "Examplestad",
+            "latitude": 12.34,
+            "longitude": -7.65,
+            "country": "Imaginaria",
+        },
+        "otherville": {
+            "name": "Otherville",
+            "latitude": 12.5,
+            "longitude": -7.5,
+            "country": "Imaginaria",
+        },
+    }
+
+    def api(request):
+        params = request.url.params
+        if request.url.host.startswith("geocoding"):
+            match = places.get(params["name"].casefold())
+            return httpx.Response(200, json={"results": [match]} if match else {})
+        start, end = (
+            date.fromisoformat(params["start_date"]),
+            date.fromisoformat(params["end_date"]),
+        )
+        days = [
+            date.fromordinal(d).isoformat() for d in range(start.toordinal(), end.toordinal() + 1)
+        ]
+        n = len(days)
+        return httpx.Response(
+            200,
+            json={
+                "daily": {
+                    "time": days,
+                    "weather_code": ([0, 63] * n)[:n],
+                    "temperature_2m_max": [20.4] * n,
+                    "temperature_2m_min": [12.6] * n,
+                    "precipitation_sum": ([0.0, 9.0] * n)[:n],
+                    "precipitation_probability_max": ([0, 85] * n)[:n],
+                }
+            },
+        )
+
+    def build(data_dir):
+        return OpenMeteoClient(
+            http_client=httpx.Client(transport=httpx.MockTransport(api)),
+            clock=lambda: datetime(2026, 11, 12, 9, tzinfo=UTC),
+        )
+
+    monkeypatch.setattr("wanderlust.cli.build_tools_client", build)
+
+
+def test_weather_forecast_table(fake_open_meteo):
+    result = runner.invoke(app, ["weather", "Examplestad", "--days", "2"])
+    assert result.exit_code == 0, result.output
+    assert "Forecast for Examplestad, Imaginaria" in result.output
+    assert "Thu 12 Nov" in result.output and "Fri 13 Nov" in result.output
+    assert "Clear sky" in result.output and "Rain" in result.output
+    assert "13 to 20" in result.output
+    assert "indoor day" in result.output
+    assert "Open-Meteo" in result.output
+
+
+def test_weather_typical_for_later_dates(fake_open_meteo):
+    result = runner.invoke(app, ["weather", "Examplestad", "--from", "2027-03-01", "-d", "3"])
+    assert result.exit_code == 0, result.output
+    assert "Typical weather for Examplestad" in result.output
+    assert "not a forecast" in result.output
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (["weather", "Nowhereville"], "No place called 'Nowhereville'"),
+        (["weather", "Examplestad", "--from", "March"], "Invalid date"),
+        (["weather", "Examplestad", "--from", "2026-01-01"], "past"),
+    ],
+)
+def test_weather_errors(fake_open_meteo, args, message):
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1
+    assert message in result.output
+
+
+def test_distance_between_places(fake_open_meteo):
+    result = runner.invoke(app, ["distance", "Examplestad", "Otherville"])
+    assert result.exit_code == 0, result.output
+    assert "Examplestad, Imaginaria → Otherville, Imaginaria" in result.output
+    assert "km in a straight line" in result.output
+    assert "Public transport: about" in result.output
+    assert "Rough estimates" in result.output
+
+
+def test_distance_unknown_place(fake_open_meteo):
+    result = runner.invoke(app, ["distance", "Examplestad", "Atlantis"])
+    assert result.exit_code == 1
+    assert "No place called 'Atlantis'" in result.output
