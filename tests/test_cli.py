@@ -283,3 +283,69 @@ def test_config_shows_default_model_and_effort(monkeypatch):
     result = runner.invoke(app, ["config"])
     assert "claude-opus-5-5 (default)" in result.output
     assert "LLM effort" in result.output
+
+
+def use_llm(monkeypatch, *script):
+    from wanderlust.llm.fake import ScriptedProvider
+
+    provider = ScriptedProvider(script)
+    monkeypatch.setattr("wanderlust.cli.build_provider", lambda settings: provider)
+    return provider
+
+
+def test_ask_streams_answer_and_lists_cited_sources(fake_guides, semantic, monkeypatch):
+    llm = use_llm(monkeypatch, "Climb the Old Lighthouse at sunset [1]. Entry is 5 coins [1].")
+    result = runner.invoke(app, ["ask", "Examplestad", "lighthouse at sunset"])
+    assert result.exit_code == 0, result.output
+    assert "fake · scripted" in result.output
+    assert "Climb the Old Lighthouse at sunset [1]." in result.output
+    assert "Sources" in result.output
+    assert "[1] Examplestad > See · Old Lighthouse" in result.output
+    assert "https://en.wikivoyage.org/wiki/Examplestad#See" in result.output
+    assert "CC BY-SA 4.0" in result.output
+
+    conversation, _ = llm.requests[0]
+    assert "Question: lighthouse at sunset" in conversation.turns[0].text
+
+
+def test_ask_warns_about_invented_citations(fake_guides, semantic, monkeypatch):
+    use_llm(monkeypatch, "Fish soup at Harbour Kitchen [1], and a beach bar [12].")
+    result = runner.invoke(app, ["ask", "Examplestad", "fish soup"])
+    assert result.exit_code == 0, result.output
+    assert "cites [12], which is not one of the passages" in result.output
+
+
+def test_ask_answer_without_citations_lists_given_passages(fake_guides, semantic, monkeypatch):
+    use_llm(monkeypatch, "Fish soup is the local speciality.")
+    result = runner.invoke(app, ["ask", "Examplestad", "fish soup", "-k", "2"])
+    assert "The answer cites no passages" in result.output
+    assert "[2] " in result.output
+
+
+def test_ask_show_passages(fake_guides, semantic, monkeypatch):
+    use_llm(monkeypatch, "Trams run every 15 minutes [1].")
+    result = runner.invoke(app, ["ask", "Examplestad", "tram", "--show-passages", "-k", "2"])
+    assert result.exit_code == 0, result.output
+    assert "[1] Examplestad" in result.output
+    assert "heritage tram line" in result.output
+
+
+def test_ask_nothing_retrieved_does_not_call_the_model(fake_guides, keyword_only, monkeypatch):
+    llm = use_llm(monkeypatch)
+    result = runner.invoke(app, ["ask", "Examplestad", "snorkelling"])
+    assert result.exit_code == 1
+    assert "nothing to answer from" in result.output
+    assert llm.requests == []
+
+
+def test_ask_requires_an_llm_key(fake_guides, keyword_only):
+    result = runner.invoke(app, ["ask", "Examplestad", "tram"])
+    assert result.exit_code == 1
+    assert "OPENAI_API_KEY" in result.output
+
+
+def test_ask_reports_llm_errors(fake_guides, semantic, monkeypatch):
+    use_llm(monkeypatch)  # empty script -> error on first call
+    result = runner.invoke(app, ["ask", "Examplestad", "tram"])
+    assert result.exit_code == 1
+    assert "no responses left" in result.output

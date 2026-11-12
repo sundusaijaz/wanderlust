@@ -15,10 +15,12 @@ from wanderlust import __version__
 from wanderlust.config import MissingAPIKeyError, Settings
 from wanderlust.llm.factory import build_provider, default_model
 from wanderlust.llm.types import Conversation, LLMError
+from wanderlust.qa.answerer import DEFAULT_PASSAGES, Answer, GroundedAnswerer
 from wanderlust.retrieval.builder import BuildReport, build_index
 from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
 from wanderlust.retrieval.index import GuideIndex, IndexStore
 from wanderlust.retrieval.search import Searcher, SearchError, SearchMode
+from wanderlust.streaming import WordWrapper
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
 from wanderlust.wikivoyage.service import build_loader
@@ -297,6 +299,15 @@ def index(
     console.print(f'[dim]Try: wanderlust search "{escape(meta.destination)}" "museums"[/dim]')
 
 
+def _index_for(place: str, settings: Settings, embedder: Embedder | None) -> GuideIndex:
+    """The saved index for a destination, building and saving it first if needed."""
+    guide_index = IndexStore(settings.data_dir).load(settings.wikivoyage_language, place)
+    if guide_index is None:
+        console.print(f"[dim]No index for {escape(place)} yet; building it now.[/dim]")
+        guide_index = _build_and_save(place, settings, embedder).index
+    return guide_index
+
+
 @app.command()
 def search(
     place: Annotated[str, typer.Argument(help='Destination, e.g. "Lisbon".')],
@@ -309,11 +320,7 @@ def search(
     """Search a destination's guides. Builds the index first if needed."""
     settings = _load_settings()
     embedder = _embedder_or_exit(settings)
-
-    guide_index = IndexStore(settings.data_dir).load(settings.wikivoyage_language, place)
-    if guide_index is None:
-        console.print(f"[dim]No index for {escape(place)} yet; building it now.[/dim]")
-        guide_index = _build_and_save(place, settings, embedder).index
+    guide_index = _index_for(place, settings, embedder)
 
     try:
         response = Searcher(guide_index, embedder).search(query, k=top, mode=mode)
@@ -351,6 +358,110 @@ def _print_results(guide_index: GuideIndex, results, mode: SearchMode) -> None:
     )
 
 
+@app.command()
+def ask(
+    place: Annotated[str, typer.Argument(help='Destination, e.g. "Lisbon".')],
+    question: Annotated[
+        str, typer.Argument(help='Your question, e.g. "Where can I try custard tarts?"')
+    ],
+    passages: Annotated[
+        int,
+        typer.Option(
+            "--passages", "-k", min=1, max=20, help="How many guide passages to give the model."
+        ),
+    ] = DEFAULT_PASSAGES,
+    mode: Annotated[
+        SearchMode, typer.Option("--mode", "-m", help="hybrid, keyword or vector.")
+    ] = SearchMode.HYBRID,
+    show_passages: Annotated[
+        bool, typer.Option("--show-passages", help="Also print the passages sent to the model.")
+    ] = False,
+) -> None:
+    """Answer a question from a destination's travel guide, citing its sources."""
+    settings = _load_settings()
+    embedder = _embedder_or_exit(settings)
+    try:
+        provider = build_provider(settings)
+    except MissingAPIKeyError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    guide_index = _index_for(place, settings, embedder)
+    destination = guide_index.meta.destination
+    answerer = GroundedAnswerer(
+        Searcher(guide_index, embedder), provider, passages=passages, mode=mode
+    )
+    try:
+        prepared = answerer.prepare(question)
+    except (SearchError, ValueError) as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    if prepared.search.note:
+        console.print(f"[yellow]{escape(prepared.search.note)}[/yellow]")
+    if not prepared.has_context:
+        console.print(
+            f"No passages in the {escape(destination)} guide match that question, "
+            "so there is nothing to answer from. Try other words or 'wanderlust guide'."
+        )
+        raise typer.Exit(code=1)
+
+    if show_passages:
+        for source in prepared.sources:
+            console.print(f"[bold][{source.number}][/bold] {escape(source.label)}")
+            console.print(f"[dim]{escape(_preview(source.chunk.text, 240))}[/dim]")
+        console.print()
+
+    console.print(
+        f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
+        f"{len(prepared.sources)} passages from the {escape(destination)} guide[/dim]\n"
+    )
+    pieces: list[str] = []
+    wrapper = _wrapper()
+    try:
+        for piece in answerer.stream(prepared):
+            pieces.append(piece)
+            wrapper.feed(piece)
+        wrapper.close()
+    except LLMError as exc:
+        console.print(f"\n[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+    console.print()
+    _print_sources(answerer.finish(prepared, "".join(pieces)))
+
+
+def _wrapper() -> WordWrapper:
+    """Write streamed model text to the console, wrapped between words."""
+
+    def write(text: str) -> None:
+        console.print(text, end="", markup=False, highlight=False, soft_wrap=True)
+
+    return WordWrapper(write, width=max(20, console.width))
+
+
+def _print_sources(answer: Answer) -> None:
+    report = answer.citations
+    if report.cited:
+        console.print("\n[bold]Sources[/bold]")
+        for source in report.cited:
+            console.print(f"[bold][{source.number}][/bold] {escape(source.label)}")
+            console.print(f"    [dim]{escape(source.url)}[/dim]")
+    elif answer.covered:
+        console.print("\n[yellow]The answer cites no passages. It was given these:[/yellow]")
+        for source in answer.sources:
+            console.print(f"[{source.number}] {escape(source.label)}", markup=False)
+    if report.unknown:
+        numbers = ", ".join(f"[{n}]" for n in report.unknown)
+        console.print(
+            f"[yellow]Note: the answer cites {numbers}, which is not one of the passages "
+            "it was given. Treat that part with care.[/yellow]"
+        )
+    console.print(
+        "\n[dim]Wikivoyage content, CC BY-SA 4.0. "
+        "Check prices and opening hours before you go.[/dim]"
+    )
+
+
 CHAT_SYSTEM_PROMPT = (
     "You are Wanderlust, a friendly and practical travel assistant. "
     "Answer concisely. If you are not sure about a fact such as prices or opening "
@@ -375,9 +486,11 @@ def chat(
 
     conversation = Conversation(system=CHAT_SYSTEM_PROMPT).add_user(message)
     console.print(f"[dim]{escape(provider.name)} · {escape(provider.model)}[/dim]")
+    wrapper = _wrapper()
     try:
         for piece in provider.stream(conversation, max_tokens=4000):
-            console.print(piece, end="", markup=False, highlight=False)
+            wrapper.feed(piece)
+        wrapper.close()
     except LLMError as exc:
         console.print(f"\n[red]{escape(str(exc))}[/red]")
         raise typer.Exit(code=1) from exc

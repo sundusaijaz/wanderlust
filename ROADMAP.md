@@ -14,7 +14,7 @@ and lands through its own pull request.
       vector index, with hybrid (keyword + vector) search.
 - [x] **M4: LLM provider layer.** One interface for OpenAI and Anthropic,
       with streaming and a fake provider for tests.
-- [ ] **M5: Grounded Q&A.** Answer travel questions from retrieved passages
+- [x] **M5: Grounded Q&A.** Answer travel questions from retrieved passages
       with inline citations back to Wikivoyage.
 - [ ] **M6: Tools.** Weather forecast and geocoding through Open-Meteo, plus
       travel-time estimates between places.

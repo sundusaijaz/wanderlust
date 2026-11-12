@@ -69,8 +69,8 @@ flowchart LR
 | Wikivoyage client with caching (`wanderlust guide`) | ✅ Done |
 | Hybrid search over guides and districts (`wanderlust search`) | ✅ Done |
 | OpenAI / Anthropic provider layer (`wanderlust chat`) | ✅ Done |
-| Grounded Q&A with citations | 🚧 Next ([#4](https://github.com/sundusaijaz/wanderlust/issues/4)) |
-| Weather, geocoding and distance tools | 📋 Planned ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
+| Grounded Q&A with citations (`wanderlust ask`) | ✅ Done |
+| Weather, geocoding and distance tools | 🚧 Next ([#5](https://github.com/sundusaijaz/wanderlust/issues/5)) |
 | Planning agent | 📋 Planned ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
 | Web UI, map view, export, Docker | 📋 Planned ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
 
@@ -139,6 +139,31 @@ Without either, Wanderlust falls back to keyword search and tells you so.
 </details>
 
 <sub>Screenshots use a made-up town from the test suite.</sub>
+
+### Ask a question
+
+Get an answer written from the guide, with every statement linked to the passage
+it came from:
+
+```bash
+uv run wanderlust ask Lisbon "Where can I try pastel de nata?"
+uv run wanderlust ask Lisbon "Is the 28 tram worth it?" --show-passages   # see what the model read
+```
+
+<p align="center">
+  <img src="docs/assets/cli-ask.svg" alt="Terminal showing 'wanderlust ask' streaming an answer with [1] and [3] citations, followed by the cited Wikivoyage sources" width="720">
+</p>
+
+<sub>This screenshot uses the made-up town from the test suite and a scripted answer, so it can be regenerated without an API key.</sub>
+
+How Wanderlust keeps answers honest:
+
+- The model only sees the top passages from hybrid search, and is told to use
+  nothing else and to cite each statement as `[n]`.
+- If the guide doesn't cover the question, it says so instead of guessing. If
+  search finds nothing relevant at all, the model isn't called.
+- Citations are checked: a number that matches no passage is flagged as a warning.
+- Passage text is treated as reference material, never as instructions.
 
 ### Choose your model
 
