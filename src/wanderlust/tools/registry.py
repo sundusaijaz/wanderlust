@@ -95,15 +95,19 @@ class ToolRegistry:
         try:
             args = tool.args_model.model_validate(call.arguments)
         except ValidationError as exc:
-            problems = "; ".join(
-                f"{'.'.join(map(str, e['loc'])) or 'arguments'}: {e['msg']}" for e in exc.errors()
-            )
-            return _error(call, f"Invalid arguments for {call.name}: {problems}")
+            return _error(call, f"Invalid arguments for {call.name}: {validation_problems(exc)}")
         try:
             result = tool.handler(args)
         except (ToolError, ValueError) as exc:
             return _error(call, str(exc))
         return ToolResult(call_id=call.id, content=_to_text(result))
+
+
+def validation_problems(exc: ValidationError) -> str:
+    """One line listing each problem with its location, e.g. 'days.0.stops: ...'."""
+    return "; ".join(
+        f"{'.'.join(map(str, e['loc'])) or 'arguments'}: {e['msg']}" for e in exc.errors()
+    )
 
 
 def _error(call: ToolCall, message: str) -> ToolResult:
