@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 import shlex
 import tempfile
-from contextlib import contextmanager, nullcontext, suppress
+from contextlib import contextmanager, suppress
 from pathlib import Path
 
 import httpx
@@ -159,8 +159,203 @@ def demo_tools_client(data_dir):
 
 
 class SilentStatus:
+    def __enter__(self) -> SilentStatus:
+        return self
+
+    def __exit__(self, *exc) -> None:
+        pass
+
     def update(self, *args, **kwargs) -> None:
         pass
+
+
+# -- a scripted planning run for the 'plan' screenshot ---------------------------
+
+DEMO_PLAN_REQUEST = "3 days in Examplestad from 13 November, lighthouses and seafood"
+DEMO_SEARCHES = [
+    "lighthouse and sights",
+    "fish soup restaurants and pubs",
+    "getting around by tram or bicycle",
+]
+
+
+def _stop(time, name, description, *cites, indoor=False):
+    return {
+        "time_of_day": time,
+        "name": name,
+        "description": description,
+        "cites": cites,
+        "indoor": indoor,
+    }
+
+
+# Every fact comes from the made-up Examplestad guide; "cites" names the passages
+# by location and is turned into the passage numbers search_guide really returned.
+DEMO_ITINERARY = {
+    "title": "Three days of lighthouses and fish soup in Examplestad",
+    "summary": (
+        "A slow harbour-town weekend: the main square and a bike ride on day one, the "
+        "lighthouse at sunset on day two, and fish soup indoors when the rain arrives."
+    ),
+    "days": [
+        {
+            "title": "Around the harbour",
+            "weather": "Mainly clear, 14 to 22 C",
+            "stops": [
+                _stop(
+                    "morning",
+                    "Clock Square",
+                    "Start in the main square, where the clock always runs five minutes fast.",
+                    "See · Clock Square",
+                ),
+                _stop(
+                    "afternoon",
+                    "Bike ride from the station",
+                    "Rent a bicycle at the station and explore at your own pace.",
+                    "Get around > By bicycle",
+                ),
+                _stop(
+                    "evening",
+                    "The Salty Mug",
+                    "A cosy pub by the pier for the first evening.",
+                    "Eat · The Salty Mug",
+                    indoor=True,
+                ),
+            ],
+            "getting_around": "Most sights are within walking distance of the harbour.",
+        },
+        {
+            "title": "The lighthouse at sunset",
+            "weather": "Overcast, 14 to 20 C",
+            "stops": [
+                _stop(
+                    "afternoon",
+                    "Heritage tram",
+                    "Ride the single tram line from the station to the lighthouse.",
+                    "Get around > By tram",
+                ),
+                _stop(
+                    "evening",
+                    "Old Lighthouse",
+                    "Climb the 120 steps to the viewpoint at sunset.",
+                    "See · Old Lighthouse",
+                ),
+            ],
+            "getting_around": "The tram runs every 15 minutes; walk back along the harbour.",
+        },
+        {
+            "title": "Fish soup on a rainy day",
+            "weather": "Rain, 13 to 17 C, 90% chance",
+            "stops": [
+                _stop(
+                    "afternoon",
+                    "Harbour Kitchen",
+                    "Family-run and known for fish soup, the local speciality.",
+                    "Eat · Harbour Kitchen",
+                    "Eat",
+                    indoor=True,
+                ),
+            ],
+        },
+    ],
+    "tips": [
+        (
+            "The tram runs every 15 minutes, so there is no timetable to plan around",
+            "Get around > By tram",
+        ),
+        ("Pack a windproof layer: winters here are windy", "Understand"),
+    ],
+    "assumptions": ["Dates taken as Friday 13 to Sunday 15 November 2026."],
+}
+
+
+class DemoPlanner(ScriptedProvider):
+    """Researches with a fixed set of tool calls, then submits DEMO_ITINERARY."""
+
+    def __init__(self) -> None:
+        from wanderlust.llm.types import ToolCall
+
+        def call(n, name, **arguments):
+            return ToolCall(id=f"call-{n}", name=name, arguments=arguments)
+
+        research = [
+            ScriptedProvider.tool_request(
+                *[
+                    call(n, "search_guide", destination="Examplestad", query=query)
+                    for n, query in enumerate(DEMO_SEARCHES, start=1)
+                ],
+                text="I'll research the Examplestad guide for sights, food and transport.",
+            ),
+            ScriptedProvider.tool_request(
+                call(4, "geocode", place="Examplestad"),
+                text="Now the weather for the trip dates.",
+            ),
+            ScriptedProvider.tool_request(
+                call(
+                    5,
+                    "get_weather",
+                    latitude=12.34,
+                    longitude=-7.65,
+                    start_date="2026-11-13",
+                    end_date="2026-11-15",
+                ),
+            ),
+        ]
+        super().__init__(research, model="demo-model")
+
+    def complete(self, conversation, *, tools=None, max_tokens=16000):
+        if self.remaining:
+            return super().complete(conversation, tools=tools, max_tokens=max_tokens)
+        from wanderlust.llm.types import ToolCall
+
+        self.requests.append((conversation, list(tools or [])))
+        return ScriptedProvider.tool_request(
+            ToolCall(id="call-6", name="submit_itinerary", arguments=self._itinerary(conversation))
+        )
+
+    @staticmethod
+    def _itinerary(conversation) -> dict:
+        import re
+        from datetime import date, timedelta
+
+        from wanderlust.llm.types import ToolResultsTurn
+
+        numbers: dict[str, int] = {}
+        for turn in conversation.turns:
+            if isinstance(turn, ToolResultsTurn):
+                for result in turn.results:
+                    for number, location in re.findall(
+                        r'<passage number="(\d+)" location="Examplestad > ([^"]+)"',
+                        result.content,
+                    ):
+                        numbers[location] = int(number)
+
+        def cite(location: str) -> int:
+            if location not in numbers:
+                raise RuntimeError(f"demo searches never returned '{location}'")
+            return numbers[location]
+
+        start = date(2026, 11, 13)
+        days = []
+        for n, day in enumerate(DEMO_ITINERARY["days"]):
+            stops = [
+                {
+                    **{k: v for k, v in stop.items() if k != "cites"},
+                    "sources": [cite(c) for c in stop["cites"]],
+                }
+                for stop in day["stops"]
+            ]
+            days.append(
+                {
+                    **day,
+                    "day": n + 1,
+                    "date": (start + timedelta(days=n)).isoformat(),
+                    "base": "Examplestad",
+                    "stops": stops,
+                }
+            )
+        tips = [f"{text} [{cite(where)}]." for text, where in DEMO_ITINERARY["tips"]]
+        return {**DEMO_ITINERARY, "days": days, "tips": tips}
 
 
 REAL_BUILD_EMBEDDER = cli.build_embedder
@@ -173,14 +368,17 @@ def render(
     *,
     width: int = 64,
     embedder_factory=None,
+    provider_factory=None,
 ) -> Path:
     console = Console(record=True, width=width, force_terminal=True, color_system="truecolor")
     # Spinners don't belong in a still image: swap in a silent stand-in.
-    console.status = lambda *args, **kwargs: nullcontext(SilentStatus())
+    console.status = lambda *args, **kwargs: SilentStatus()
     cli.console = console
     cli.build_loader = demo_loader
     cli.build_embedder = embedder_factory or REAL_BUILD_EMBEDDER
-    cli.build_provider = lambda settings: ScriptedProvider([DEMO_ANSWER], model="demo-model")
+    cli.build_provider = provider_factory or (
+        lambda settings: ScriptedProvider([DEMO_ANSWER], model="demo-model")
+    )
     cli.build_tools_client = demo_tools_client
     with demo_environment():
         for args in commands:
@@ -236,6 +434,14 @@ def main() -> None:
             "cli-weather.svg",
             "wanderlust weather",
             width=96,
+        ),
+        render(
+            [["plan", DEMO_PLAN_REQUEST, "--verbose"]],
+            "cli-plan.svg",
+            "wanderlust plan",
+            width=96,
+            embedder_factory=lambda settings: DemoEmbedder(),
+            provider_factory=lambda settings: DemoPlanner(),
         ),
     ]
     for path in paths:

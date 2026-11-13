@@ -35,21 +35,49 @@ class Tool:
 
 
 def json_schema(model: type[BaseModel]) -> dict[str, Any]:
-    """The model's JSON Schema without Pydantic's 'title' noise."""
+    """The model's JSON Schema, self-contained and without Pydantic's 'title' noise.
 
-    def strip(node: Any) -> Any:
+    Nested models are inlined instead of referenced through ``$defs``, because
+    tool schemas are easier for every provider (and model) to read that way.
+    """
+    schema = model.model_json_schema()
+    defs = schema.pop("$defs", {})
+
+    def resolve(node: Any, seen: tuple[str, ...] = ()) -> Any:
         if isinstance(node, dict):
-            return {k: strip(v) for k, v in node.items() if k != "title"}
+            ref = node.get("$ref")
+            if isinstance(ref, str) and ref.startswith("#/$defs/"):
+                name = ref.removeprefix("#/$defs/")
+                if name in seen:
+                    raise ValueError(f"recursive model '{name}' cannot be inlined")
+                extra = {k: v for k, v in node.items() if k != "$ref"}
+                return resolve({**defs[name], **extra}, (*seen, name))
+            return {k: resolve(v, seen) for k, v in node.items() if k != "title"}
         if isinstance(node, list):
-            return [strip(v) for v in node]
+            return [resolve(v, seen) for v in node]
         return node
 
-    return strip(model.model_json_schema())
+    return resolve(schema)
 
 
 class ToolRegistry:
     def __init__(self, tools: Iterable[Tool]) -> None:
-        self._tools = {tool.name: tool for tool in tools}
+        self._tools: dict[str, Tool] = {}
+        for tool in tools:
+            if tool.name in self._tools:
+                raise ValueError(f"duplicate tool name '{tool.name}'")
+            self._tools[tool.name] = tool
+
+    def __add__(self, other: ToolRegistry) -> ToolRegistry:
+        """A registry with the tools of both (names must not clash)."""
+        return ToolRegistry([*self.tools, *other.tools])
+
+    def __contains__(self, name: object) -> bool:
+        return name in self._tools
+
+    @property
+    def tools(self) -> list[Tool]:
+        return list(self._tools.values())
 
     @property
     def names(self) -> list[str]:
@@ -67,15 +95,19 @@ class ToolRegistry:
         try:
             args = tool.args_model.model_validate(call.arguments)
         except ValidationError as exc:
-            problems = "; ".join(
-                f"{'.'.join(map(str, e['loc'])) or 'arguments'}: {e['msg']}" for e in exc.errors()
-            )
-            return _error(call, f"Invalid arguments for {call.name}: {problems}")
+            return _error(call, f"Invalid arguments for {call.name}: {validation_problems(exc)}")
         try:
             result = tool.handler(args)
         except (ToolError, ValueError) as exc:
             return _error(call, str(exc))
         return ToolResult(call_id=call.id, content=_to_text(result))
+
+
+def validation_problems(exc: ValidationError) -> str:
+    """One line listing each problem with its location, e.g. 'days.0.stops: ...'."""
+    return "; ".join(
+        f"{'.'.join(map(str, e['loc'])) or 'arguments'}: {e['msg']}" for e in exc.errors()
+    )
 
 
 def _error(call: ToolCall, message: str) -> ToolResult:

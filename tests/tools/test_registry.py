@@ -213,3 +213,50 @@ def test_http_errors_from_open_meteo_become_tool_errors(make_meteo):
     client, _ = make_meteo(lambda r: httpx.Response(500, json={}))
     result = travel_tools(client).run(call("geocode", place="Lisbon"))
     assert result.is_error and "HTTP 500" in result.content
+
+
+def test_json_schema_inlines_nested_models():
+    class Stop(BaseModel):
+        name: str
+
+    class Day(BaseModel):
+        stops: list[Stop]
+        highlight: Stop | None = None
+
+    schema = json_schema(Day)
+    assert "$defs" not in json.dumps(schema)
+    assert schema["properties"]["stops"]["items"] == {
+        "properties": {"name": {"type": "string"}},
+        "required": ["name"],
+        "type": "object",
+    }
+    options = schema["properties"]["highlight"]["anyOf"]
+    assert {"type": "null"} in options
+    assert any(option.get("required") == ["name"] for option in options)
+
+
+def test_json_schema_rejects_recursive_models():
+    class Node(BaseModel):
+        children: list["Node"] = []
+
+    with pytest.raises(ValueError, match="recursive"):
+        json_schema(Node)
+
+
+def _tool(name):
+    class Args(BaseModel):
+        pass
+
+    return Tool(name=name, description=name, args_model=Args, handler=lambda args: name)
+
+
+def test_registries_can_be_combined():
+    combined = ToolRegistry([_tool("a")]) + ToolRegistry([_tool("b")])
+    assert combined.names == ["a", "b"]
+    assert "b" in combined and "c" not in combined
+    assert combined.run(call("b")).content == "b"
+
+
+def test_duplicate_tool_names_are_rejected():
+    with pytest.raises(ValueError, match="duplicate tool name 'a'"):
+        ToolRegistry([_tool("a")]) + ToolRegistry([_tool("a")])
