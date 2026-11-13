@@ -54,12 +54,6 @@ def test_config_reports_invalid_settings(monkeypatch):
     assert "Invalid configuration" in result.output
 
 
-def test_plan_is_a_placeholder_for_now():
-    result = runner.invoke(app, ["plan", "4 days in Lisbon"])
-    assert result.exit_code == 2
-    assert "4 days in Lisbon" in result.output
-
-
 @pytest.fixture
 def fake_guides(monkeypatch, make_client, tmp_path):
     """Point the guide command at the made-up Examplestad API and a temp cache."""
@@ -456,3 +450,153 @@ def test_distance_unknown_place(fake_open_meteo):
     result = runner.invoke(app, ["distance", "Examplestad", "Atlantis"])
     assert result.exit_code == 1
     assert "No place called 'Atlantis'" in result.output
+
+
+# -- plan -----------------------------------------------------------------------
+
+
+def _call(name, n=1, **arguments):
+    from wanderlust.llm.types import ToolCall
+
+    return ToolCall(id=f"{name}-{n}", name=name, arguments=arguments)
+
+
+def _plan_script(**overrides):
+    from wanderlust.llm.fake import ScriptedProvider
+
+    itinerary = {
+        "title": "Two days in Examplestad",
+        "summary": "Lighthouse walks and fish soup.",
+        "days": [
+            {
+                "day": 1,
+                "date": "2026-11-13",
+                "base": "Examplestad",
+                "title": "The lighthouse",
+                "weather": "Clear sky, up to 20 C",
+                "stops": [
+                    {
+                        "time_of_day": "evening",
+                        "name": "Old Lighthouse",
+                        "description": "Climb the 120 steps at sunset.",
+                        "sources": [1],
+                    }
+                ],
+                "getting_around": "Heritage tram to the end of the line.",
+            },
+            {
+                "day": 2,
+                "date": "2026-11-14",
+                "base": "Examplestad",
+                "title": "A rainy harbour day",
+                "weather": "Rain",
+                "stops": [
+                    {
+                        "time_of_day": "afternoon",
+                        "name": "Harbour Kitchen",
+                        "description": "Family-run [cheap] fish soup.",
+                        "sources": [2, 1],
+                        "indoor": True,
+                    }
+                ],
+            },
+        ],
+        "tips": ["Trams run every 15 minutes [2]."],
+        "assumptions": ["Trip taken as 13-14 November 2026."],
+        **overrides,
+    }
+    return [
+        ScriptedProvider.tool_request(
+            _call("search_guide", destination="Examplestad", query="lighthouse fish soup tram"),
+            text="Let me research the guide first.",
+        ),
+        ScriptedProvider.tool_request(
+            _call("geocode", place="Examplestad"),
+            _call(
+                "get_weather",
+                latitude=12.34,
+                longitude=-7.65,
+                start_date="2026-11-13",
+                end_date="2026-11-14",
+            ),
+        ),
+        ScriptedProvider.tool_request(_call("submit_itinerary", **itinerary)),
+    ]
+
+
+def test_plan_prints_a_cited_itinerary(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    llm = use_llm(monkeypatch, *_plan_script())
+    result = runner.invoke(app, ["plan", "Two days in Examplestad"])
+    assert result.exit_code == 0, result.output
+    out = result.output
+    assert "fake · scripted · planning: Two days in Examplestad" in out
+    assert "Two days in Examplestad" in out
+    assert "Day 1 · Fri 13 Nov 2026 · Examplestad" in out
+    assert "Weather: Clear sky, up to 20 C" in out
+    assert "Evening" in out and "Old Lighthouse [1]" in out
+    assert "Harbour Kitchen [2][1]" in out and "indoor" in out
+    assert "Family-run [cheap] fish soup." in out  # model text is not read as markup
+    assert "Trams run every 15 minutes [2]." in out
+    assert "Trip taken as 13-14 November 2026." in out
+    assert "Sources" in out and "[1] Examplestad" in out
+    assert "https://en.wikivoyage.org/wiki/Examplestad" in out
+    assert "3 model calls, 4 tool calls" in out
+    assert "CC BY-SA 4.0" in out and "Open-Meteo" in out
+    assert "research the guide first" not in out  # only shown with --verbose
+    assert llm.remaining == 0
+
+
+def test_plan_verbose_shows_tool_calls(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    use_llm(monkeypatch, *_plan_script())
+    result = runner.invoke(app, ["plan", "Two days in Examplestad", "--verbose"])
+    assert result.exit_code == 0, result.output
+    out = result.output
+    assert "Let me research the guide first." in out
+    assert "Searching the Examplestad guide for 'lighthouse fish soup tram'" in out
+    assert "→ 5 passages" in out
+    assert "Looking up Examplestad → Examplestad, Imaginaria" in out
+    assert "forecast, 2 days, 1 wet" in out
+    assert "Checking the itinerary → accepted" in out
+
+
+def test_plan_json(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    import json
+
+    use_llm(monkeypatch, *_plan_script())
+    result = runner.invoke(app, ["plan", "Two days in Examplestad", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload["request"] == "Two days in Examplestad"
+    assert payload["itinerary"]["days"][1]["stops"][0]["indoor"] is True
+    assert [s["number"] for s in payload["sources"]] == [1, 2]
+    assert payload["sources"][0]["url"].startswith("https://en.wikivoyage.org/wiki/Examplestad")
+    assert payload["model"] == {"provider": "fake", "name": "scripted"}
+
+
+def test_plan_failure_is_reported(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    use_llm(monkeypatch, "I would need more details.", "Sorry, I can't.")
+    result = runner.invoke(app, ["plan", "Somewhere nice"])
+    assert result.exit_code == 1
+    assert "stopped without submitting an itinerary" in result.output
+    assert "The model said: Sorry, I can't." in result.output
+    assert "2 model calls, 0 tool calls" in result.output
+
+
+def test_plan_step_limit_option(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    use_llm(monkeypatch, *_plan_script())
+    result = runner.invoke(app, ["plan", "Two days in Examplestad", "--max-steps", "2"])
+    assert result.exit_code == 1
+    assert "No itinerary after 2 steps" in result.output
+
+
+def test_plan_without_api_key(fake_guides, keyword_only):
+    result = runner.invoke(app, ["plan", "Two days in Examplestad"])
+    assert result.exit_code == 1
+    assert "OPENAI_API_KEY" in result.output
+
+
+def test_plan_reports_provider_errors(fake_guides, semantic, fake_open_meteo, monkeypatch):
+    use_llm(monkeypatch)  # no responses: the first model call fails
+    result = runner.invoke(app, ["plan", "Two days in Examplestad"])
+    assert result.exit_code == 1
+    assert "no responses left" in result.output

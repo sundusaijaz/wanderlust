@@ -13,9 +13,25 @@ from rich.panel import Panel
 from rich.table import Table
 
 from wanderlust import __version__
+from wanderlust.agent.guides import GuideLibrary, index_opener
+from wanderlust.agent.planner import (
+    DEFAULT_MAX_STEPS,
+    AgentEvent,
+    ModelReplied,
+    PlanningAgent,
+    PlanningError,
+    ToolStarted,
+)
 from wanderlust.config import MissingAPIKeyError, Settings
 from wanderlust.llm.factory import build_provider, default_model
 from wanderlust.llm.types import Conversation, LLMError
+from wanderlust.plan_view import (
+    describe_call,
+    plan_json,
+    print_itinerary,
+    print_step,
+    progress_summary,
+)
 from wanderlust.qa.answerer import DEFAULT_PASSAGES, Answer, GroundedAnswerer
 from wanderlust.retrieval.builder import BuildReport, build_index
 from wanderlust.retrieval.embeddings import Embedder, EmbeddingError, build_embedder
@@ -25,7 +41,7 @@ from wanderlust.streaming import WordWrapper
 from wanderlust.tools.distance import distance_report
 from wanderlust.tools.geocoding import Geocoder, Place
 from wanderlust.tools.http import ToolError
-from wanderlust.tools.registry import build_tools_client
+from wanderlust.tools.registry import build_tools_client, travel_tools
 from wanderlust.tools.weather import WeatherService
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
@@ -603,14 +619,98 @@ def chat(
 
 @app.command()
 def plan(
-    request: Annotated[str, typer.Argument(help='What you want, e.g. "4 days in Lisbon".')],
+    request: Annotated[
+        str,
+        typer.Argument(help='What you want, e.g. "4 days in Lisbon in March, food and history".'),
+    ],
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Show each tool call as the agent works.")
+    ] = False,
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Print the itinerary as JSON instead of a table.")
+    ] = False,
+    max_steps: Annotated[
+        int,
+        typer.Option("--max-steps", min=2, max=40, help="Most model calls the agent may make."),
+    ] = DEFAULT_MAX_STEPS,
+    mode: Annotated[
+        SearchMode, typer.Option("--mode", "-m", help="Guide search: hybrid, keyword or vector.")
+    ] = SearchMode.HYBRID,
 ) -> None:
-    """Plan a trip from a natural-language request. (Coming in v0.1.)"""
-    console.print(f"[bold]Trip request:[/bold] {request}")
-    console.print(
-        "[yellow]The planning agent is not built yet.[/yellow] Follow progress in ROADMAP.md."
-    )
-    raise typer.Exit(code=2)
+    """Plan a trip: a day-by-day itinerary in which every stop cites its source.
+
+    The agent searches the travel guides, checks the weather and distances, then writes
+    the plan. Use --verbose to watch the tool calls.
+    """
+    settings = _load_settings()
+    embedder = _embedder_or_exit(settings)
+    try:
+        provider = build_provider(settings)
+    except MissingAPIKeyError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+
+    # With --json, stdout is only the JSON; progress goes to stderr.
+    out = Console(stderr=True) if as_json else console
+    loader = build_loader(settings)
+    client = build_tools_client(settings.data_dir)
+    status = out.status("Planning your trip...")
+
+    def on_build(destination: str) -> None:
+        status.update(f"Building the {escape(destination)} guide index (first time only)...")
+
+    def on_event(event: AgentEvent) -> None:
+        if isinstance(event, ModelReplied):
+            if verbose and event.response.text.strip():
+                out.print(f"[dim italic]{escape(event.response.text.strip())}[/dim italic]")
+            status.update("Thinking...")
+        elif isinstance(event, ToolStarted):
+            status.update(escape(describe_call(event.call)) + "...")
+        elif verbose:
+            print_step(out, event.call, event.result)
+
+    try:
+        library = GuideLibrary(
+            index_opener(
+                IndexStore(settings.data_dir),
+                loader,
+                embedder,
+                language=settings.wikivoyage_language,
+                on_build=on_build,
+            )
+        )
+        agent = PlanningAgent(
+            provider,
+            library,
+            travel_tools(client, language=settings.wikivoyage_language),
+            mode=mode,
+            max_steps=max_steps,
+            today=lambda: client.clock().date(),
+            on_event=on_event,
+        )
+        out.print(
+            f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
+            f"planning: {escape(request)}[/dim]"
+        )
+        with status:
+            result = agent.plan(request)
+    except PlanningError as exc:
+        out.print(f"[red]{escape(str(exc))}[/red]")
+        if exc.model_text.strip():
+            out.print(f"[dim]The model said: {escape(exc.model_text.strip())}[/dim]")
+        out.print(f"[dim]{escape(progress_summary(exc.progress))}.[/dim]")
+        raise typer.Exit(code=1) from exc
+    except (LLMError, ValueError) as exc:
+        out.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(code=1) from exc
+    finally:
+        loader.close()
+        client.close()
+
+    if as_json:
+        typer.echo(plan_json(result))
+    else:
+        print_itinerary(console, result)
 
 
 if __name__ == "__main__":  # pragma: no cover
