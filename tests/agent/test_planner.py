@@ -181,6 +181,34 @@ def test_invalid_itinerary_is_sent_back_and_can_be_fixed(make_agent):
     assert plan.progress.model_calls == 3
 
 
+def test_invented_citations_are_rejected(make_agent):
+    agent, _ = make_agent(reply(search(limit=2)), reply(submit(1, 7, 9)), reply(submit(2, n=2)))
+    plan = agent.plan("A day in Examplestad")
+    rejected = plan.progress.calls_to("submit_itinerary")[0].result
+    assert rejected.is_error
+    assert "cites [7], [9], but search_guide never returned those passages" in rejected.content
+    assert "known passages: 1 to 2" in rejected.content
+    assert [s.number for s in plan.sources] == [2]
+
+
+def test_tip_citations_are_checked_too(make_agent):
+    agent, _ = make_agent(
+        reply(search(limit=2)),
+        reply(submit(1, tips=["Take the tram [5]."])),
+        reply(submit(1, n=2, tips=["Take the tram [2]."])),
+    )
+    plan = agent.plan("A day in Examplestad")
+    assert "cites [5]" in plan.progress.calls_to("submit_itinerary")[0].result.content
+    assert [s.number for s in plan.sources] == [1, 2]
+
+
+def test_submitting_before_any_search_is_rejected(make_agent):
+    agent, _ = make_agent(reply(submit(1)), reply(search()), reply(submit(1, n=2)))
+    plan = agent.plan("A day in Examplestad")
+    rejected = plan.progress.calls_to("submit_itinerary")[0].result
+    assert rejected.is_error and "Search the guides with search_guide first" in rejected.content
+
+
 def test_a_plain_text_reply_gets_one_nudge(make_agent):
     agent, provider = make_agent(
         reply(search()), "Here is your plan: go to the lighthouse.", reply(submit(1))

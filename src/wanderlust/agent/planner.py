@@ -223,7 +223,7 @@ class PlanningAgent:
 
 
 def check_submission(call: ToolCall, book: SourceBook) -> tuple[ToolResult, Itinerary | None]:
-    """Validate a submitted itinerary against the schema."""
+    """Validate a submitted itinerary, including that its citations are real."""
 
     def reject(message: str) -> tuple[ToolResult, None]:
         return ToolResult(call_id=call.id, content=message, is_error=True), None
@@ -233,4 +233,18 @@ def check_submission(call: ToolCall, book: SourceBook) -> tuple[ToolResult, Itin
     except ValidationError as exc:
         return reject(f"The itinerary has problems: {validation_problems(exc)}")
 
+    if len(book) == 0:
+        return reject(
+            "No guide passages have been retrieved yet. Search the guides with "
+            "search_guide first; every stop must cite the passages that mention it."
+        )
+    unknown = [n for n in itinerary.cited_numbers() if n not in book]
+    if unknown:
+        numbers = ", ".join(f"[{n}]" for n in unknown)
+        return reject(
+            f"The itinerary cites {numbers}, but search_guide never returned "
+            f"{'that passage' if len(unknown) == 1 else 'those passages'} "
+            f"(known passages: 1 to {len(book)}). Cite only retrieved passages, "
+            "or search for those places first."
+        )
     return ToolResult(call_id=call.id, content="Itinerary accepted."), itinerary
