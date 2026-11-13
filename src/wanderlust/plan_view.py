@@ -124,7 +124,7 @@ def _print_day(console: Console, day: DayPlan) -> None:
     table.add_column("What")
     for stop in day.stops:
         cites = "".join(f"[{n}]" for n in stop.sources)
-        badge = "  [cyan]☂ indoor[/cyan]" if stop.indoor else ""
+        badge = "  [cyan]☔ indoor[/cyan]" if stop.indoor else ""
         table.add_row(
             TIME_LABELS[stop.time_of_day],
             f"[bold]{escape(stop.name)}[/bold] [dim]{escape(cites)}[/dim]{badge}\n"
