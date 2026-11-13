@@ -690,7 +690,8 @@ def plan(
         )
         out.print(
             f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
-            f"planning: {escape(request)}[/dim]"
+            f"planning: {escape(request)}[/dim]",
+            highlight=False,
         )
         with status:
             result = agent.plan(request)

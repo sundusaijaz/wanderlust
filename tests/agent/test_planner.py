@@ -307,3 +307,9 @@ def test_option_checks(library):
     )
     with pytest.raises(ValueError, match="reserved"):
         PlanningAgent(ScriptedProvider([]), library, clash).plan("A trip")
+
+
+def test_plan_sources_are_listed_by_number(make_agent):
+    agent, _ = make_agent(reply(search(limit=3)), reply(submit(3, 1)))
+    plan = agent.plan("A day in Examplestad")
+    assert [s.number for s in plan.sources] == [1, 3]

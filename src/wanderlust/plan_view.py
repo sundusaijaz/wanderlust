@@ -112,7 +112,10 @@ def _print_day(console: Console, day: DayPlan) -> None:
     if day.date:
         heading += f" · {day.date.strftime('%a %d %b %Y')}"
     heading += f" · {day.base}"
-    console.print(f"\n[bold cyan]{escape(heading)}[/bold cyan]  [bold]{escape(day.title)}[/bold]")
+    console.print(
+        f"\n[bold cyan]{escape(heading)}[/bold cyan]  [bold]{escape(day.title)}[/bold]",
+        highlight=False,
+    )
     if day.weather:
         console.print(f"  [dim]Weather:[/dim] {escape(day.weather)}", highlight=False)
 

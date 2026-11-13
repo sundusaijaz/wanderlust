@@ -91,7 +91,7 @@ class Plan:
     request: str
     itinerary: Itinerary
     sources: list[Source]
-    """The passages the itinerary cites, in order of first citation."""
+    """The passages the itinerary cites, by number."""
     progress: Progress
     provider: str
     model: str
@@ -209,7 +209,7 @@ class PlanningAgent:
                 return Plan(
                     request=request,
                     itinerary=accepted,
-                    sources=book.select(accepted.cited_numbers()),
+                    sources=book.select(sorted(accepted.cited_numbers())),
                     progress=progress,
                     provider=self.provider.name,
                     model=self.provider.model,
