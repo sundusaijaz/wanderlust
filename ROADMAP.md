@@ -18,7 +18,7 @@ and lands through its own pull request.
       with inline citations back to Wikivoyage.
 - [x] **M6: Tools.** Weather forecast and geocoding through Open-Meteo, plus
       travel-time estimates between places.
-- [ ] **M7: Planning agent.** A tool-calling agent loop that turns a trip
+- [x] **M7: Planning agent.** A tool-calling agent loop that turns a trip
       request into a structured, day-by-day itinerary.
 
 ## v0.2: something you would actually share
