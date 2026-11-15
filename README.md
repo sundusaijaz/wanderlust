@@ -71,8 +71,9 @@ flowchart LR
 | OpenAI / Anthropic provider layer (`wanderlust chat`) | ✅ Done |
 | Grounded Q&A with citations (`wanderlust ask`) | ✅ Done |
 | Weather, place lookup and distance tools (`wanderlust weather`, `distance`) | ✅ Done |
-| Planning agent | 🚧 Next ([#6](https://github.com/sundusaijaz/wanderlust/issues/6)) |
-| Web UI, map view, export, Docker | 📋 Planned ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
+| Planning agent with cited itineraries (`wanderlust plan`) | ✅ Done |
+| Web UI | 🚧 Next ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)) |
+| Map view, export, Docker | 📋 Planned ([#8](https://github.com/sundusaijaz/wanderlust/issues/8)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
 
 See the full [roadmap](ROADMAP.md).
 
@@ -86,6 +87,44 @@ cp .env.example .env
 # edit .env: choose a provider and add its API key
 uv run wanderlust --help
 ```
+
+### Plan a trip
+
+Describe the trip in your own words. The planning agent researches the guides,
+checks the weather and distances, and writes a day-by-day plan in which every
+stop cites the passage it came from:
+
+```bash
+uv run wanderlust plan "4 days in Lisbon in March, food and history"
+uv run wanderlust plan "5 days in Portugal in May, hiking and seafood" --verbose  # watch the tool calls
+uv run wanderlust plan "A weekend in Porto" --json > porto.json                   # for other tools
+```
+
+<p align="center">
+  <img src="docs/assets/cli-plan.svg" alt="Terminal showing 'wanderlust plan --verbose': the agent's guide searches, place lookup and weather check, then a three-day itinerary with cited stops, an indoor stop on the rainy day, tips and the Wikivoyage sources" width="720">
+</p>
+
+<sub>This screenshot uses the made-up town from the test suite and a scripted agent run, so it can be regenerated without an API key.</sub>
+
+<details>
+<summary>How the agent works</summary>
+
+1. The model gets the request, today's date and four tools: `search_guide`
+   (hybrid search over any destination's guide, built on first use),
+   `geocode`, `get_weather` and `get_distance`. It can ask for several tools at
+   once, and their results go back together.
+2. Every passage it retrieves gets a number that stays the same for the whole
+   run, so it can cite `[3]` from its first search at the very end.
+3. It finishes by calling `submit_itinerary`, whose arguments must match the
+   itinerary schema (days, stops by time of day, weather, tips, assumptions).
+   Wanderlust checks the plan, including that every stop cites a passage the
+   agent actually retrieved, and sends any problems back for the model to fix.
+4. Tool failures (an unknown town, the weather service being down) are
+   reported to the model as errors it can work around, not crashes. A step limit
+   (`--max-steps`, default 16) and a cap on how many guides one plan may open
+   keep runs bounded.
+
+</details>
 
 ### Read a travel guide
 
@@ -167,7 +206,7 @@ How Wanderlust keeps answers honest:
 
 ### Check the weather and distances
 
-These are the tools the planning agent will use, and you can call them directly:
+These are tools the planning agent uses, and you can call them directly:
 
 ```bash
 uv run wanderlust weather Lisbon                        # forecast for the next 5 days

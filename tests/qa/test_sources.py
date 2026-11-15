@@ -38,3 +38,14 @@ def test_location_attribute_is_escaped(searcher):
     tricky = replace(result, chunk=result.chunk.model_copy(update={"section": 'A "quoted" <b>'}))
     text = format_sources(number_sources([tricky]))
     assert "A &quot;quoted&quot; &lt;b>" in text
+
+
+def test_listings_with_a_position_carry_coordinates(searcher):
+    results = searcher.search("lighthouse sunset steps", k=5).results
+    lighthouse = next(r for r in results if r.chunk.listing_name == "Old Lighthouse")
+    harbour = searcher.search("harbour kitchen fish soup", k=5).results
+    no_position = next(r for r in harbour if r.chunk.listing_name == "Harbour Kitchen")
+
+    text = format_sources(number_sources([lighthouse, no_position]))
+    assert 'coordinates="12.34560,-7.65430"' in text
+    assert text.count("coordinates=") == 1  # Harbour Kitchen's longitude is invalid

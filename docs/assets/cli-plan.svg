@@ -1,0 +1,331 @@
+<svg class="rich-terminal" viewBox="0 0 1190 1684.8" xmlns="http://www.w3.org/2000/svg">
+    <!-- Generated with Rich https://www.textualize.io -->
+    <style>
+
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Regular"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Regular.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Regular.woff") format("woff");
+        font-style: normal;
+        font-weight: 400;
+    }
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Bold"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Bold.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Bold.woff") format("woff");
+        font-style: bold;
+        font-weight: 700;
+    }
+
+    .terminal-754900909-matrix {
+        font-family: Fira Code, monospace;
+        font-size: 20px;
+        line-height: 24.4px;
+        font-variant-east-asian: full-width;
+    }
+
+    .terminal-754900909-title {
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }
+
+    .terminal-754900909-r1 { fill: #98a84b;font-weight: bold }
+.terminal-754900909-r2 { fill: #c5c8c6 }
+.terminal-754900909-r3 { fill: #868887 }
+.terminal-754900909-r4 { fill: #868887;font-style: italic; }
+.terminal-754900909-r5 { fill: #98729f;font-weight: bold }
+.terminal-754900909-r6 { fill: #68a0b3;font-weight: bold }
+.terminal-754900909-r7 { fill: #c5c8c6;font-weight: bold }
+.terminal-754900909-r8 { fill: #68a0b3 }
+.terminal-754900909-r9 { fill: #1f5f9c;text-decoration: underline; }
+.terminal-754900909-r10 { fill: #4e707b;font-weight: bold }
+    </style>
+
+    <defs>
+    <clipPath id="terminal-754900909-clip-terminal">
+      <rect x="0" y="0" width="1170.1999999999998" height="1633.8" />
+    </clipPath>
+    <clipPath id="terminal-754900909-line-0">
+    <rect x="0" y="1.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-1">
+    <rect x="0" y="25.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-2">
+    <rect x="0" y="50.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-3">
+    <rect x="0" y="74.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-4">
+    <rect x="0" y="99.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-5">
+    <rect x="0" y="123.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-6">
+    <rect x="0" y="147.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-7">
+    <rect x="0" y="172.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-8">
+    <rect x="0" y="196.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-9">
+    <rect x="0" y="221.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-10">
+    <rect x="0" y="245.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-11">
+    <rect x="0" y="269.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-12">
+    <rect x="0" y="294.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-13">
+    <rect x="0" y="318.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-14">
+    <rect x="0" y="343.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-15">
+    <rect x="0" y="367.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-16">
+    <rect x="0" y="391.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-17">
+    <rect x="0" y="416.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-18">
+    <rect x="0" y="440.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-19">
+    <rect x="0" y="465.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-20">
+    <rect x="0" y="489.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-21">
+    <rect x="0" y="513.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-22">
+    <rect x="0" y="538.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-23">
+    <rect x="0" y="562.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-24">
+    <rect x="0" y="587.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-25">
+    <rect x="0" y="611.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-26">
+    <rect x="0" y="635.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-27">
+    <rect x="0" y="660.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-28">
+    <rect x="0" y="684.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-29">
+    <rect x="0" y="709.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-30">
+    <rect x="0" y="733.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-31">
+    <rect x="0" y="757.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-32">
+    <rect x="0" y="782.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-33">
+    <rect x="0" y="806.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-34">
+    <rect x="0" y="831.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-35">
+    <rect x="0" y="855.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-36">
+    <rect x="0" y="879.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-37">
+    <rect x="0" y="904.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-38">
+    <rect x="0" y="928.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-39">
+    <rect x="0" y="953.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-40">
+    <rect x="0" y="977.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-41">
+    <rect x="0" y="1001.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-42">
+    <rect x="0" y="1026.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-43">
+    <rect x="0" y="1050.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-44">
+    <rect x="0" y="1075.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-45">
+    <rect x="0" y="1099.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-46">
+    <rect x="0" y="1123.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-47">
+    <rect x="0" y="1148.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-48">
+    <rect x="0" y="1172.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-49">
+    <rect x="0" y="1197.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-50">
+    <rect x="0" y="1221.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-51">
+    <rect x="0" y="1245.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-52">
+    <rect x="0" y="1270.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-53">
+    <rect x="0" y="1294.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-54">
+    <rect x="0" y="1319.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-55">
+    <rect x="0" y="1343.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-56">
+    <rect x="0" y="1367.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-57">
+    <rect x="0" y="1392.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-58">
+    <rect x="0" y="1416.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-59">
+    <rect x="0" y="1441.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-60">
+    <rect x="0" y="1465.5" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-61">
+    <rect x="0" y="1489.9" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-62">
+    <rect x="0" y="1514.3" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-63">
+    <rect x="0" y="1538.7" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-64">
+    <rect x="0" y="1563.1" width="1171.2" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-754900909-line-65">
+    <rect x="0" y="1587.5" width="1171.2" height="24.65"/>
+            </clipPath>
+    </defs>
+
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="1188" height="1682.8" rx="8"/><text class="terminal-754900909-title" fill="#c5c8c6" text-anchor="middle" x="594" y="27">wanderlust&#160;plan</text>
+            <g transform="translate(26,22)">
+            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
+            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
+            <circle cx="44" cy="0" r="7" fill="#28c840"/>
+            </g>
+        
+    <g transform="translate(9, 41)" clip-path="url(#terminal-754900909-clip-terminal)">
+    
+    <g class="terminal-754900909-matrix">
+    <text class="terminal-754900909-r1" x="0" y="20" textLength="12.2" clip-path="url(#terminal-754900909-line-0)">$</text><text class="terminal-754900909-r2" x="12.2" y="20" textLength="1122.4" clip-path="url(#terminal-754900909-line-0)">&#160;wanderlust&#160;plan&#160;&#x27;3&#160;days&#160;in&#160;Examplestad&#160;from&#160;13&#160;November,&#160;lighthouses&#160;and&#160;seafood&#x27;&#160;--verbose</text><text class="terminal-754900909-r2" x="1171.2" y="20" textLength="12.2" clip-path="url(#terminal-754900909-line-0)">
+</text><text class="terminal-754900909-r3" x="0" y="44.4" textLength="1134.6" clip-path="url(#terminal-754900909-line-1)">fake&#160;·&#160;demo-model&#160;·&#160;planning:&#160;3&#160;days&#160;in&#160;Examplestad&#160;from&#160;13&#160;November,&#160;lighthouses&#160;and&#160;seafood</text><text class="terminal-754900909-r2" x="1171.2" y="44.4" textLength="12.2" clip-path="url(#terminal-754900909-line-1)">
+</text><text class="terminal-754900909-r4" x="0" y="68.8" textLength="817.4" clip-path="url(#terminal-754900909-line-2)">I&#x27;ll&#160;research&#160;the&#160;Examplestad&#160;guide&#160;for&#160;sights,&#160;food&#160;and&#160;transport.</text><text class="terminal-754900909-r2" x="1171.2" y="68.8" textLength="12.2" clip-path="url(#terminal-754900909-line-2)">
+</text><text class="terminal-754900909-r2" x="0" y="93.2" textLength="780.8" clip-path="url(#terminal-754900909-line-3)">&#160;&#160;🔎&#160;Searching&#160;the&#160;Examplestad&#160;guide&#160;for&#160;&#x27;lighthouse&#160;and&#160;sights&#x27;&#160;</text><text class="terminal-754900909-r3" x="793" y="93.2" textLength="146.4" clip-path="url(#terminal-754900909-line-3)">→&#160;5&#160;passages</text><text class="terminal-754900909-r2" x="1171.2" y="93.2" textLength="12.2" clip-path="url(#terminal-754900909-line-3)">
+</text><text class="terminal-754900909-r2" x="0" y="117.6" textLength="890.6" clip-path="url(#terminal-754900909-line-4)">&#160;&#160;🔎&#160;Searching&#160;the&#160;Examplestad&#160;guide&#160;for&#160;&#x27;fish&#160;soup&#160;restaurants&#160;and&#160;pubs&#x27;&#160;</text><text class="terminal-754900909-r3" x="902.8" y="117.6" textLength="146.4" clip-path="url(#terminal-754900909-line-4)">→&#160;5&#160;passages</text><text class="terminal-754900909-r2" x="1171.2" y="117.6" textLength="12.2" clip-path="url(#terminal-754900909-line-4)">
+</text><text class="terminal-754900909-r2" x="0" y="142" textLength="927.2" clip-path="url(#terminal-754900909-line-5)">&#160;&#160;🔎&#160;Searching&#160;the&#160;Examplestad&#160;guide&#160;for&#160;&#x27;getting&#160;around&#160;by&#160;tram&#160;or&#160;bicycle&#x27;&#160;</text><text class="terminal-754900909-r3" x="939.4" y="142" textLength="146.4" clip-path="url(#terminal-754900909-line-5)">→&#160;5&#160;passages</text><text class="terminal-754900909-r2" x="1171.2" y="142" textLength="12.2" clip-path="url(#terminal-754900909-line-5)">
+</text><text class="terminal-754900909-r4" x="0" y="166.4" textLength="427" clip-path="url(#terminal-754900909-line-6)">Now&#160;the&#160;weather&#160;for&#160;the&#160;trip&#160;dates.</text><text class="terminal-754900909-r2" x="1171.2" y="166.4" textLength="12.2" clip-path="url(#terminal-754900909-line-6)">
+</text><text class="terminal-754900909-r2" x="0" y="190.8" textLength="329.4" clip-path="url(#terminal-754900909-line-7)">&#160;&#160;📍&#160;Looking&#160;up&#160;Examplestad&#160;</text><text class="terminal-754900909-r3" x="341.6" y="190.8" textLength="500.2" clip-path="url(#terminal-754900909-line-7)">→&#160;Examplestad,&#160;Coast&#160;Province,&#160;Imaginaria</text><text class="terminal-754900909-r2" x="1171.2" y="190.8" textLength="12.2" clip-path="url(#terminal-754900909-line-7)">
+</text><text class="terminal-754900909-r2" x="0" y="215.2" textLength="512.4" clip-path="url(#terminal-754900909-line-8)">&#160;&#160;🌦&#160;&#160;Checking&#160;the&#160;weather&#160;from&#160;2026-11-13&#160;</text><text class="terminal-754900909-r3" x="512.4" y="215.2" textLength="305" clip-path="url(#terminal-754900909-line-8)">→&#160;forecast,&#160;3&#160;days,&#160;1&#160;wet</text><text class="terminal-754900909-r2" x="1171.2" y="215.2" textLength="12.2" clip-path="url(#terminal-754900909-line-8)">
+</text><text class="terminal-754900909-r2" x="0" y="239.6" textLength="329.4" clip-path="url(#terminal-754900909-line-9)">&#160;&#160;📝&#160;Checking&#160;the&#160;itinerary&#160;</text><text class="terminal-754900909-r3" x="341.6" y="239.6" textLength="122" clip-path="url(#terminal-754900909-line-9)">→&#160;accepted</text><text class="terminal-754900909-r2" x="1171.2" y="239.6" textLength="12.2" clip-path="url(#terminal-754900909-line-9)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="264" textLength="12.2" clip-path="url(#terminal-754900909-line-10)">
+</text><text class="terminal-754900909-r5" x="0" y="288.4" textLength="658.8" clip-path="url(#terminal-754900909-line-11)">Three&#160;days&#160;of&#160;lighthouses&#160;and&#160;fish&#160;soup&#160;in&#160;Examplestad</text><text class="terminal-754900909-r2" x="1171.2" y="288.4" textLength="12.2" clip-path="url(#terminal-754900909-line-11)">
+</text><text class="terminal-754900909-r2" x="0" y="312.8" textLength="1110.2" clip-path="url(#terminal-754900909-line-12)">A&#160;slow&#160;harbour-town&#160;weekend:&#160;the&#160;main&#160;square&#160;and&#160;a&#160;bike&#160;ride&#160;on&#160;day&#160;one,&#160;the&#160;lighthouse&#160;at&#160;</text><text class="terminal-754900909-r2" x="1171.2" y="312.8" textLength="12.2" clip-path="url(#terminal-754900909-line-12)">
+</text><text class="terminal-754900909-r2" x="0" y="337.2" textLength="768.6" clip-path="url(#terminal-754900909-line-13)">sunset&#160;on&#160;day&#160;two,&#160;and&#160;fish&#160;soup&#160;indoors&#160;when&#160;the&#160;rain&#160;arrives.</text><text class="terminal-754900909-r2" x="1171.2" y="337.2" textLength="12.2" clip-path="url(#terminal-754900909-line-13)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="361.6" textLength="12.2" clip-path="url(#terminal-754900909-line-14)">
+</text><text class="terminal-754900909-r6" x="0" y="386" textLength="451.4" clip-path="url(#terminal-754900909-line-15)">Day&#160;1&#160;·&#160;Fri&#160;13&#160;Nov&#160;2026&#160;·&#160;Examplestad</text><text class="terminal-754900909-r7" x="475.8" y="386" textLength="219.6" clip-path="url(#terminal-754900909-line-15)">Around&#160;the&#160;harbour</text><text class="terminal-754900909-r2" x="1171.2" y="386" textLength="12.2" clip-path="url(#terminal-754900909-line-15)">
+</text><text class="terminal-754900909-r3" x="24.4" y="410.4" textLength="97.6" clip-path="url(#terminal-754900909-line-16)">Weather:</text><text class="terminal-754900909-r2" x="122" y="410.4" textLength="305" clip-path="url(#terminal-754900909-line-16)">&#160;Mainly&#160;clear,&#160;14&#160;to&#160;22&#160;C</text><text class="terminal-754900909-r2" x="1171.2" y="410.4" textLength="12.2" clip-path="url(#terminal-754900909-line-16)">
+</text><text class="terminal-754900909-r7" x="24.4" y="434.8" textLength="109.8" clip-path="url(#terminal-754900909-line-17)">Morning&#160;&#160;</text><text class="terminal-754900909-r7" x="170.8" y="434.8" textLength="146.4" clip-path="url(#terminal-754900909-line-17)">Clock&#160;Square</text><text class="terminal-754900909-r3" x="329.4" y="434.8" textLength="36.6" clip-path="url(#terminal-754900909-line-17)">[5]</text><text class="terminal-754900909-r2" x="1171.2" y="434.8" textLength="12.2" clip-path="url(#terminal-754900909-line-17)">
+</text><text class="terminal-754900909-r2" x="170.8" y="459.2" textLength="878.4" clip-path="url(#terminal-754900909-line-18)">Start&#160;in&#160;the&#160;main&#160;square,&#160;where&#160;the&#160;clock&#160;always&#160;runs&#160;five&#160;minutes&#160;fast.</text><text class="terminal-754900909-r2" x="1171.2" y="459.2" textLength="12.2" clip-path="url(#terminal-754900909-line-18)">
+</text><text class="terminal-754900909-r7" x="24.4" y="483.6" textLength="109.8" clip-path="url(#terminal-754900909-line-19)">Afternoon</text><text class="terminal-754900909-r7" x="170.8" y="483.6" textLength="317.2" clip-path="url(#terminal-754900909-line-19)">Bike&#160;ride&#160;from&#160;the&#160;station</text><text class="terminal-754900909-r3" x="500.2" y="483.6" textLength="36.6" clip-path="url(#terminal-754900909-line-19)">[9]</text><text class="terminal-754900909-r2" x="1171.2" y="483.6" textLength="12.2" clip-path="url(#terminal-754900909-line-19)">
+</text><text class="terminal-754900909-r2" x="170.8" y="508" textLength="878.4" clip-path="url(#terminal-754900909-line-20)">Rent&#160;a&#160;bicycle&#160;at&#160;the&#160;station&#160;and&#160;explore&#160;at&#160;your&#160;own&#160;pace.&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-754900909-r2" x="1171.2" y="508" textLength="12.2" clip-path="url(#terminal-754900909-line-20)">
+</text><text class="terminal-754900909-r7" x="24.4" y="532.4" textLength="109.8" clip-path="url(#terminal-754900909-line-21)">Evening&#160;&#160;</text><text class="terminal-754900909-r7" x="170.8" y="532.4" textLength="158.6" clip-path="url(#terminal-754900909-line-21)">The&#160;Salty&#160;Mug</text><text class="terminal-754900909-r3" x="341.6" y="532.4" textLength="36.6" clip-path="url(#terminal-754900909-line-21)">[7]</text><text class="terminal-754900909-r8" x="402.6" y="532.4" textLength="97.6" clip-path="url(#terminal-754900909-line-21)">☔&#160;indoor</text><text class="terminal-754900909-r2" x="1171.2" y="532.4" textLength="12.2" clip-path="url(#terminal-754900909-line-21)">
+</text><text class="terminal-754900909-r2" x="170.8" y="556.8" textLength="878.4" clip-path="url(#terminal-754900909-line-22)">A&#160;cosy&#160;pub&#160;by&#160;the&#160;pier&#160;for&#160;the&#160;first&#160;evening.&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-754900909-r2" x="1171.2" y="556.8" textLength="12.2" clip-path="url(#terminal-754900909-line-22)">
+</text><text class="terminal-754900909-r3" x="24.4" y="581.2" textLength="183" clip-path="url(#terminal-754900909-line-23)">Getting&#160;around:</text><text class="terminal-754900909-r2" x="207.4" y="581.2" textLength="683.2" clip-path="url(#terminal-754900909-line-23)">&#160;Most&#160;sights&#160;are&#160;within&#160;walking&#160;distance&#160;of&#160;the&#160;harbour.</text><text class="terminal-754900909-r2" x="1171.2" y="581.2" textLength="12.2" clip-path="url(#terminal-754900909-line-23)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="605.6" textLength="12.2" clip-path="url(#terminal-754900909-line-24)">
+</text><text class="terminal-754900909-r6" x="0" y="630" textLength="451.4" clip-path="url(#terminal-754900909-line-25)">Day&#160;2&#160;·&#160;Sat&#160;14&#160;Nov&#160;2026&#160;·&#160;Examplestad</text><text class="terminal-754900909-r7" x="475.8" y="630" textLength="292.8" clip-path="url(#terminal-754900909-line-25)">The&#160;lighthouse&#160;at&#160;sunset</text><text class="terminal-754900909-r2" x="1171.2" y="630" textLength="12.2" clip-path="url(#terminal-754900909-line-25)">
+</text><text class="terminal-754900909-r3" x="24.4" y="654.4" textLength="97.6" clip-path="url(#terminal-754900909-line-26)">Weather:</text><text class="terminal-754900909-r2" x="122" y="654.4" textLength="256.2" clip-path="url(#terminal-754900909-line-26)">&#160;Overcast,&#160;14&#160;to&#160;20&#160;C</text><text class="terminal-754900909-r2" x="1171.2" y="654.4" textLength="12.2" clip-path="url(#terminal-754900909-line-26)">
+</text><text class="terminal-754900909-r7" x="24.4" y="678.8" textLength="109.8" clip-path="url(#terminal-754900909-line-27)">Afternoon</text><text class="terminal-754900909-r7" x="170.8" y="678.8" textLength="158.6" clip-path="url(#terminal-754900909-line-27)">Heritage&#160;tram</text><text class="terminal-754900909-r3" x="341.6" y="678.8" textLength="36.6" clip-path="url(#terminal-754900909-line-27)">[3]</text><text class="terminal-754900909-r2" x="1171.2" y="678.8" textLength="12.2" clip-path="url(#terminal-754900909-line-27)">
+</text><text class="terminal-754900909-r2" x="170.8" y="703.2" textLength="744.2" clip-path="url(#terminal-754900909-line-28)">Ride&#160;the&#160;single&#160;tram&#160;line&#160;from&#160;the&#160;station&#160;to&#160;the&#160;lighthouse.</text><text class="terminal-754900909-r2" x="1171.2" y="703.2" textLength="12.2" clip-path="url(#terminal-754900909-line-28)">
+</text><text class="terminal-754900909-r7" x="24.4" y="727.6" textLength="109.8" clip-path="url(#terminal-754900909-line-29)">Evening&#160;&#160;</text><text class="terminal-754900909-r7" x="170.8" y="727.6" textLength="170.8" clip-path="url(#terminal-754900909-line-29)">Old&#160;Lighthouse</text><text class="terminal-754900909-r3" x="353.8" y="727.6" textLength="36.6" clip-path="url(#terminal-754900909-line-29)">[4]</text><text class="terminal-754900909-r2" x="1171.2" y="727.6" textLength="12.2" clip-path="url(#terminal-754900909-line-29)">
+</text><text class="terminal-754900909-r2" x="170.8" y="752" textLength="744.2" clip-path="url(#terminal-754900909-line-30)">Climb&#160;the&#160;120&#160;steps&#160;to&#160;the&#160;viewpoint&#160;at&#160;sunset.&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-754900909-r2" x="1171.2" y="752" textLength="12.2" clip-path="url(#terminal-754900909-line-30)">
+</text><text class="terminal-754900909-r3" x="24.4" y="776.4" textLength="183" clip-path="url(#terminal-754900909-line-31)">Getting&#160;around:</text><text class="terminal-754900909-r2" x="207.4" y="776.4" textLength="744.2" clip-path="url(#terminal-754900909-line-31)">&#160;The&#160;tram&#160;runs&#160;every&#160;15&#160;minutes;&#160;walk&#160;back&#160;along&#160;the&#160;harbour.</text><text class="terminal-754900909-r2" x="1171.2" y="776.4" textLength="12.2" clip-path="url(#terminal-754900909-line-31)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="800.8" textLength="12.2" clip-path="url(#terminal-754900909-line-32)">
+</text><text class="terminal-754900909-r6" x="0" y="825.2" textLength="451.4" clip-path="url(#terminal-754900909-line-33)">Day&#160;3&#160;·&#160;Sun&#160;15&#160;Nov&#160;2026&#160;·&#160;Examplestad</text><text class="terminal-754900909-r7" x="475.8" y="825.2" textLength="292.8" clip-path="url(#terminal-754900909-line-33)">Fish&#160;soup&#160;on&#160;a&#160;rainy&#160;day</text><text class="terminal-754900909-r2" x="1171.2" y="825.2" textLength="12.2" clip-path="url(#terminal-754900909-line-33)">
+</text><text class="terminal-754900909-r3" x="24.4" y="849.6" textLength="97.6" clip-path="url(#terminal-754900909-line-34)">Weather:</text><text class="terminal-754900909-r2" x="122" y="849.6" textLength="353.8" clip-path="url(#terminal-754900909-line-34)">&#160;Rain,&#160;13&#160;to&#160;17&#160;C,&#160;90%&#160;chance</text><text class="terminal-754900909-r2" x="1171.2" y="849.6" textLength="12.2" clip-path="url(#terminal-754900909-line-34)">
+</text><text class="terminal-754900909-r7" x="24.4" y="874" textLength="109.8" clip-path="url(#terminal-754900909-line-35)">Afternoon</text><text class="terminal-754900909-r7" x="170.8" y="874" textLength="183" clip-path="url(#terminal-754900909-line-35)">Harbour&#160;Kitchen</text><text class="terminal-754900909-r3" x="366" y="874" textLength="73.2" clip-path="url(#terminal-754900909-line-35)">[8][6]</text><text class="terminal-754900909-r8" x="463.6" y="874" textLength="97.6" clip-path="url(#terminal-754900909-line-35)">☔&#160;indoor</text><text class="terminal-754900909-r2" x="1171.2" y="874" textLength="12.2" clip-path="url(#terminal-754900909-line-35)">
+</text><text class="terminal-754900909-r2" x="170.8" y="898.4" textLength="695.4" clip-path="url(#terminal-754900909-line-36)">Family-run&#160;and&#160;known&#160;for&#160;fish&#160;soup,&#160;the&#160;local&#160;speciality.</text><text class="terminal-754900909-r2" x="1171.2" y="898.4" textLength="12.2" clip-path="url(#terminal-754900909-line-36)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="922.8" textLength="12.2" clip-path="url(#terminal-754900909-line-37)">
+</text><text class="terminal-754900909-r7" x="0" y="947.2" textLength="48.8" clip-path="url(#terminal-754900909-line-38)">Tips</text><text class="terminal-754900909-r2" x="1171.2" y="947.2" textLength="12.2" clip-path="url(#terminal-754900909-line-38)">
+</text><text class="terminal-754900909-r2" x="0" y="971.6" textLength="976" clip-path="url(#terminal-754900909-line-39)">&#160;&#160;•&#160;The&#160;tram&#160;runs&#160;every&#160;15&#160;minutes,&#160;so&#160;there&#160;is&#160;no&#160;timetable&#160;to&#160;plan&#160;around&#160;[3].</text><text class="terminal-754900909-r2" x="1171.2" y="971.6" textLength="12.2" clip-path="url(#terminal-754900909-line-39)">
+</text><text class="terminal-754900909-r2" x="0" y="996" textLength="683.2" clip-path="url(#terminal-754900909-line-40)">&#160;&#160;•&#160;Pack&#160;a&#160;windproof&#160;layer:&#160;winters&#160;here&#160;are&#160;windy&#160;[10].</text><text class="terminal-754900909-r2" x="1171.2" y="996" textLength="12.2" clip-path="url(#terminal-754900909-line-40)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="1020.4" textLength="12.2" clip-path="url(#terminal-754900909-line-41)">
+</text><text class="terminal-754900909-r7" x="0" y="1044.8" textLength="134.2" clip-path="url(#terminal-754900909-line-42)">Assumptions</text><text class="terminal-754900909-r2" x="1171.2" y="1044.8" textLength="12.2" clip-path="url(#terminal-754900909-line-42)">
+</text><text class="terminal-754900909-r3" x="24.4" y="1069.2" textLength="658.8" clip-path="url(#terminal-754900909-line-43)">•&#160;Dates&#160;taken&#160;as&#160;Friday&#160;13&#160;to&#160;Sunday&#160;15&#160;November&#160;2026.</text><text class="terminal-754900909-r2" x="1171.2" y="1069.2" textLength="12.2" clip-path="url(#terminal-754900909-line-43)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="1093.6" textLength="12.2" clip-path="url(#terminal-754900909-line-44)">
+</text><text class="terminal-754900909-r7" x="0" y="1118" textLength="85.4" clip-path="url(#terminal-754900909-line-45)">Sources</text><text class="terminal-754900909-r2" x="1171.2" y="1118" textLength="12.2" clip-path="url(#terminal-754900909-line-45)">
+</text><text class="terminal-754900909-r7" x="0" y="1142.4" textLength="36.6" clip-path="url(#terminal-754900909-line-46)">[3]</text><text class="terminal-754900909-r2" x="36.6" y="1142.4" textLength="427" clip-path="url(#terminal-754900909-line-46)">&#160;Examplestad&#160;&gt;&#160;Get&#160;around&#160;&gt;&#160;By&#160;tram</text><text class="terminal-754900909-r2" x="1171.2" y="1142.4" textLength="12.2" clip-path="url(#terminal-754900909-line-46)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1166.8" textLength="610" clip-path="url(#terminal-754900909-line-47)">https://en.wikivoyage.org/wiki/Examplestad#By_tram</text><text class="terminal-754900909-r2" x="1171.2" y="1166.8" textLength="12.2" clip-path="url(#terminal-754900909-line-47)">
+</text><text class="terminal-754900909-r7" x="0" y="1191.2" textLength="36.6" clip-path="url(#terminal-754900909-line-48)">[4]</text><text class="terminal-754900909-r2" x="36.6" y="1191.2" textLength="427" clip-path="url(#terminal-754900909-line-48)">&#160;Examplestad&#160;&gt;&#160;See&#160;·&#160;Old&#160;Lighthouse</text><text class="terminal-754900909-r2" x="1171.2" y="1191.2" textLength="12.2" clip-path="url(#terminal-754900909-line-48)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1215.6" textLength="561.2" clip-path="url(#terminal-754900909-line-49)">https://en.wikivoyage.org/wiki/Examplestad#See</text><text class="terminal-754900909-r2" x="1171.2" y="1215.6" textLength="12.2" clip-path="url(#terminal-754900909-line-49)">
+</text><text class="terminal-754900909-r7" x="0" y="1240" textLength="36.6" clip-path="url(#terminal-754900909-line-50)">[5]</text><text class="terminal-754900909-r2" x="36.6" y="1240" textLength="402.6" clip-path="url(#terminal-754900909-line-50)">&#160;Examplestad&#160;&gt;&#160;See&#160;·&#160;Clock&#160;Square</text><text class="terminal-754900909-r2" x="1171.2" y="1240" textLength="12.2" clip-path="url(#terminal-754900909-line-50)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1264.4" textLength="561.2" clip-path="url(#terminal-754900909-line-51)">https://en.wikivoyage.org/wiki/Examplestad#See</text><text class="terminal-754900909-r2" x="1171.2" y="1264.4" textLength="12.2" clip-path="url(#terminal-754900909-line-51)">
+</text><text class="terminal-754900909-r7" x="0" y="1288.8" textLength="36.6" clip-path="url(#terminal-754900909-line-52)">[6]</text><text class="terminal-754900909-r2" x="36.6" y="1288.8" textLength="219.6" clip-path="url(#terminal-754900909-line-52)">&#160;Examplestad&#160;&gt;&#160;Eat</text><text class="terminal-754900909-r2" x="1171.2" y="1288.8" textLength="12.2" clip-path="url(#terminal-754900909-line-52)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1313.2" textLength="561.2" clip-path="url(#terminal-754900909-line-53)">https://en.wikivoyage.org/wiki/Examplestad#Eat</text><text class="terminal-754900909-r2" x="1171.2" y="1313.2" textLength="12.2" clip-path="url(#terminal-754900909-line-53)">
+</text><text class="terminal-754900909-r7" x="0" y="1337.6" textLength="36.6" clip-path="url(#terminal-754900909-line-54)">[7]</text><text class="terminal-754900909-r2" x="36.6" y="1337.6" textLength="414.8" clip-path="url(#terminal-754900909-line-54)">&#160;Examplestad&#160;&gt;&#160;Eat&#160;·&#160;The&#160;Salty&#160;Mug</text><text class="terminal-754900909-r2" x="1171.2" y="1337.6" textLength="12.2" clip-path="url(#terminal-754900909-line-54)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1362" textLength="561.2" clip-path="url(#terminal-754900909-line-55)">https://en.wikivoyage.org/wiki/Examplestad#Eat</text><text class="terminal-754900909-r2" x="1171.2" y="1362" textLength="12.2" clip-path="url(#terminal-754900909-line-55)">
+</text><text class="terminal-754900909-r7" x="0" y="1386.4" textLength="36.6" clip-path="url(#terminal-754900909-line-56)">[8]</text><text class="terminal-754900909-r2" x="36.6" y="1386.4" textLength="439.2" clip-path="url(#terminal-754900909-line-56)">&#160;Examplestad&#160;&gt;&#160;Eat&#160;·&#160;Harbour&#160;Kitchen</text><text class="terminal-754900909-r2" x="1171.2" y="1386.4" textLength="12.2" clip-path="url(#terminal-754900909-line-56)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1410.8" textLength="561.2" clip-path="url(#terminal-754900909-line-57)">https://en.wikivoyage.org/wiki/Examplestad#Eat</text><text class="terminal-754900909-r2" x="1171.2" y="1410.8" textLength="12.2" clip-path="url(#terminal-754900909-line-57)">
+</text><text class="terminal-754900909-r7" x="0" y="1435.2" textLength="36.6" clip-path="url(#terminal-754900909-line-58)">[9]</text><text class="terminal-754900909-r2" x="36.6" y="1435.2" textLength="463.6" clip-path="url(#terminal-754900909-line-58)">&#160;Examplestad&#160;&gt;&#160;Get&#160;around&#160;&gt;&#160;By&#160;bicycle</text><text class="terminal-754900909-r2" x="1171.2" y="1435.2" textLength="12.2" clip-path="url(#terminal-754900909-line-58)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1459.6" textLength="646.6" clip-path="url(#terminal-754900909-line-59)">https://en.wikivoyage.org/wiki/Examplestad#By_bicycle</text><text class="terminal-754900909-r2" x="1171.2" y="1459.6" textLength="12.2" clip-path="url(#terminal-754900909-line-59)">
+</text><text class="terminal-754900909-r7" x="0" y="1484" textLength="48.8" clip-path="url(#terminal-754900909-line-60)">[10]</text><text class="terminal-754900909-r2" x="48.8" y="1484" textLength="305" clip-path="url(#terminal-754900909-line-60)">&#160;Examplestad&#160;&gt;&#160;Understand</text><text class="terminal-754900909-r2" x="1171.2" y="1484" textLength="12.2" clip-path="url(#terminal-754900909-line-60)">
+</text><text class="terminal-754900909-r9" x="48.8" y="1508.4" textLength="646.6" clip-path="url(#terminal-754900909-line-61)">https://en.wikivoyage.org/wiki/Examplestad#Understand</text><text class="terminal-754900909-r2" x="1171.2" y="1508.4" textLength="12.2" clip-path="url(#terminal-754900909-line-61)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="1532.8" textLength="12.2" clip-path="url(#terminal-754900909-line-62)">
+</text><text class="terminal-754900909-r3" x="0" y="1557.2" textLength="366" clip-path="url(#terminal-754900909-line-63)">Planned&#160;by&#160;fake&#160;·&#160;demo-model:&#160;</text><text class="terminal-754900909-r10" x="366" y="1557.2" textLength="12.2" clip-path="url(#terminal-754900909-line-63)">4</text><text class="terminal-754900909-r3" x="378.2" y="1557.2" textLength="170.8" clip-path="url(#terminal-754900909-line-63)">&#160;model&#160;calls,&#160;</text><text class="terminal-754900909-r10" x="549" y="1557.2" textLength="12.2" clip-path="url(#terminal-754900909-line-63)">6</text><text class="terminal-754900909-r3" x="561.2" y="1557.2" textLength="146.4" clip-path="url(#terminal-754900909-line-63)">&#160;tool&#160;calls.</text><text class="terminal-754900909-r2" x="1171.2" y="1557.2" textLength="12.2" clip-path="url(#terminal-754900909-line-63)">
+</text><text class="terminal-754900909-r3" x="0" y="1581.6" textLength="353.8" clip-path="url(#terminal-754900909-line-64)">Wikivoyage&#160;content,&#160;CC&#160;BY-SA&#160;</text><text class="terminal-754900909-r10" x="353.8" y="1581.6" textLength="36.6" clip-path="url(#terminal-754900909-line-64)">4.0</text><text class="terminal-754900909-r3" x="390.4" y="1581.6" textLength="573.4" clip-path="url(#terminal-754900909-line-64)">.&#160;Check&#160;prices&#160;and&#160;opening&#160;hours&#160;before&#160;you&#160;go.</text><text class="terminal-754900909-r2" x="1171.2" y="1581.6" textLength="12.2" clip-path="url(#terminal-754900909-line-64)">
+</text><text class="terminal-754900909-r3" x="0" y="1606" textLength="463.6" clip-path="url(#terminal-754900909-line-65)">Weather&#160;data&#160;by&#160;Open-Meteo.com,&#160;CC&#160;BY&#160;</text><text class="terminal-754900909-r10" x="463.6" y="1606" textLength="36.6" clip-path="url(#terminal-754900909-line-65)">4.0</text><text class="terminal-754900909-r3" x="500.2" y="1606" textLength="12.2" clip-path="url(#terminal-754900909-line-65)">.</text><text class="terminal-754900909-r2" x="1171.2" y="1606" textLength="12.2" clip-path="url(#terminal-754900909-line-65)">
+</text><text class="terminal-754900909-r2" x="1171.2" y="1630.4" textLength="12.2" clip-path="url(#terminal-754900909-line-66)">
+</text>
+    </g>
+    </g>
+</svg>

@@ -44,15 +44,16 @@ def format_sources(sources: Sequence[Source]) -> str:
     """Render sources as tagged blocks for the prompt.
 
     Each passage is wrapped in its own tag with its number and location, so the
-    model can tell passages apart and cite them precisely.
+    model can tell passages apart and cite them precisely. Listings with a
+    known position also carry their coordinates (useful for distance checks).
     """
     blocks = []
     for source in sources:
-        blocks.append(
-            f'<passage number="{source.number}" location="{_attr(source.label)}">\n'
-            f"{source.chunk.text}\n"
-            f"</passage>"
-        )
+        attrs = f'number="{source.number}" location="{_attr(source.label)}"'
+        chunk = source.chunk
+        if chunk.lat is not None and chunk.lon is not None:
+            attrs += f' coordinates="{chunk.lat:.5f},{chunk.lon:.5f}"'
+        blocks.append(f"<passage {attrs}>\n{chunk.text}\n</passage>")
     return "\n".join(blocks)
 
 
