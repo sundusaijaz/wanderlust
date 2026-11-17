@@ -600,3 +600,39 @@ def test_plan_reports_provider_errors(fake_guides, semantic, fake_open_meteo, mo
     result = runner.invoke(app, ["plan", "Two days in Examplestad"])
     assert result.exit_code == 1
     assert "no responses left" in result.output
+
+
+# -- serve ----------------------------------------------------------------------
+
+
+@pytest.fixture
+def fake_uvicorn(monkeypatch):
+    calls = []
+    monkeypatch.setattr("uvicorn.run", lambda app, **options: calls.append((app, options)))
+    return calls
+
+
+def test_serve_starts_the_web_app_locally(fake_uvicorn, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    result = runner.invoke(app, ["serve", "--port", "8123"])
+    assert result.exit_code == 0, result.output
+    assert "running at http://localhost:8123" in result.output
+    assert "No API key" not in result.output and "beyond this computer" not in result.output
+    ((web_app, options),) = fake_uvicorn
+    assert options == {"host": "127.0.0.1", "port": 8123, "log_level": "warning"}
+    assert {route.path for route in web_app.routes} >= {"/", "/api/status", "/api/plan"}
+
+
+def test_serve_warns_without_a_key_and_on_public_hosts(fake_uvicorn):
+    result = runner.invoke(app, ["serve", "--host", "0.0.0.0"])
+    assert result.exit_code == 0, result.output
+    assert "No API key is configured" in result.output
+    assert "anyone who can reach this address" in result.output
+    assert fake_uvicorn[0][1]["host"] == "0.0.0.0"
+
+
+def test_serve_can_open_the_browser(fake_uvicorn, monkeypatch):
+    opened = []
+    monkeypatch.setattr("webbrowser.open", opened.append)
+    runner.invoke(app, ["serve", "--open"])
+    assert opened == ["http://localhost:8000"]
