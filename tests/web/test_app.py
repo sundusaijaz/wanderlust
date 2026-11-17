@@ -67,6 +67,15 @@ def test_status_reports_the_model(web):
 def test_index_and_static_files(web):
     page = web.get("/")
     assert page.status_code == 200 and "Wanderlust" in page.text
+    for asset in ("/static/app.js", "/static/app.css", "/static/favicon.svg"):
+        assert asset in page.text
+        assert web.get(asset).status_code == 200
+    assert web.get("/static/../app.py").status_code == 404
+
+
+def test_page_never_renders_model_text_as_html(web):
+    script = web.get("/static/app.js").text
+    assert ".innerHTML" not in script and "insertAdjacentHTML" not in script
 
 
 def test_plan_streams_progress_then_the_itinerary(web, script):
