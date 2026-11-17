@@ -17,6 +17,19 @@ const ICONS = {
   submit_itinerary: "📝",
 };
 const TIMES = { morning: "Morning", afternoon: "Afternoon", evening: "Evening" };
+const WEATHER_ICONS = [
+  [/thunder/i, "⛈️"],
+  [/snow|sleet/i, "❄️"],
+  [/rain|shower|drizzle|wet/i, "🌧️"],
+  [/fog|mist/i, "🌫️"],
+  [/overcast|cloud/i, "☁️"],
+  [/clear|sun/i, "☀️"],
+];
+
+function weatherIcon(text) {
+  const match = WEATHER_ICONS.find(([pattern]) => pattern.test(text));
+  return match ? match[1] : "🌦️";
+}
 
 const $ = (id) => document.getElementById(id);
 const form = $("plan-form");
@@ -267,7 +280,7 @@ function renderDay(day, known) {
   if (day.weather) {
     const weather = card.querySelector(".weather");
     weather.hidden = false;
-    weather.textContent = `🌦️ ${day.weather}`;
+    weather.textContent = `${weatherIcon(day.weather)} ${day.weather}`;
   }
   const list = card.querySelector(".stops");
   for (const stop of day.stops) {
