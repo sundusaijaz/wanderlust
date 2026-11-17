@@ -1,1 +1,84 @@
-<!doctype html><title>Wanderlust</title>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wanderlust: trip planner</title>
+  <meta name="description" content="Plan trips with an AI agent grounded in Wikivoyage travel guides.">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand">
+        <img src="/static/favicon.svg" alt="" width="40" height="40">
+        <div>
+          <h1>Wanderlust</h1>
+          <p class="tagline">Day-by-day trip plans, grounded in real travel guides.</p>
+        </div>
+      </div>
+      <span id="model" class="pill" hidden></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card ask" aria-labelledby="ask-title">
+      <h2 id="ask-title" class="visually-hidden">Plan a trip</h2>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <form id="plan-form">
+        <label for="request">Where do you want to go?</label>
+        <textarea id="request" name="request" rows="2" maxlength="500" required
+          placeholder="4 days in Lisbon in March, food and history"></textarea>
+        <div class="form-row">
+          <div id="examples" class="examples" aria-label="Examples"></div>
+          <div class="actions">
+            <button type="button" id="stop" class="secondary" hidden>Stop</button>
+            <button type="submit" id="go">Plan my trip</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <div id="workspace" class="workspace" hidden>
+      <aside class="card activity" aria-labelledby="activity-title">
+        <h2 id="activity-title">Agent activity</h2>
+        <ol id="steps" class="steps" aria-live="polite"></ol>
+        <p id="run-summary" class="muted small"></p>
+      </aside>
+
+      <section id="result" class="result" aria-live="polite">
+        <div id="placeholder" class="card placeholder">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>The agent is researching your trip&hellip;</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>
+      Travel content from <a href="https://www.wikivoyage.org/">Wikivoyage</a>
+      (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>).
+      Weather and places from <a href="https://open-meteo.com/">Open-Meteo</a>
+      (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
+      Check prices and opening hours before you go.
+    </p>
+    <p><a href="https://github.com/sundusaijaz/wanderlust">Wanderlust on GitHub</a> <span id="version"></span></p>
+  </footer>
+
+  <template id="day-template">
+    <article class="card day">
+      <header class="day-head">
+        <p class="day-meta"></p>
+        <h3 class="day-title"></h3>
+        <p class="weather" hidden></p>
+      </header>
+      <ol class="stops"></ol>
+      <p class="getting-around muted" hidden></p>
+    </article>
+  </template>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
