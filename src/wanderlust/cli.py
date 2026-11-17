@@ -13,15 +13,14 @@ from rich.panel import Panel
 from rich.table import Table
 
 from wanderlust import __version__
-from wanderlust.agent.guides import GuideLibrary, index_opener
 from wanderlust.agent.planner import (
     DEFAULT_MAX_STEPS,
     AgentEvent,
     ModelReplied,
-    PlanningAgent,
     PlanningError,
     ToolStarted,
 )
+from wanderlust.agent.setup import build_agent
 from wanderlust.config import MissingAPIKeyError, Settings
 from wanderlust.llm.factory import build_provider, default_model
 from wanderlust.llm.types import Conversation, LLMError
@@ -41,7 +40,7 @@ from wanderlust.streaming import WordWrapper
 from wanderlust.tools.distance import distance_report
 from wanderlust.tools.geocoding import Geocoder, Place
 from wanderlust.tools.http import ToolError
-from wanderlust.tools.registry import build_tools_client, travel_tools
+from wanderlust.tools.registry import build_tools_client
 from wanderlust.tools.weather import WeatherService
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
@@ -670,23 +669,16 @@ def plan(
             print_step(out, event.call, event.result)
 
     try:
-        library = GuideLibrary(
-            index_opener(
-                IndexStore(settings.data_dir),
-                loader,
-                embedder,
-                language=settings.wikivoyage_language,
-                on_build=on_build,
-            )
-        )
-        agent = PlanningAgent(
+        agent = build_agent(
+            settings,
             provider,
-            library,
-            travel_tools(client, language=settings.wikivoyage_language),
+            loader=loader,
+            embedder=embedder,
+            tools_client=client,
             mode=mode,
             max_steps=max_steps,
-            today=lambda: client.clock().date(),
             on_event=on_event,
+            on_build=on_build,
         )
         out.print(
             f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
