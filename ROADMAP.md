@@ -23,7 +23,7 @@ and lands through its own pull request.
 
 ## v0.2: something you would actually share
 
-- [ ] **M8: Web UI.** A chat-style interface that streams the plan as the agent
+- [x] **M8: Web UI.** A chat-style interface that streams the plan as the agent
       works and shows which tools it used.
 - [ ] **M9: Map view.** Plot each day's stops on an interactive map.
 - [ ] **M10: Export.** Save itineraries as Markdown, PDF or calendar (.ics) files.

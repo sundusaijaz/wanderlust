@@ -13,15 +13,14 @@ from rich.panel import Panel
 from rich.table import Table
 
 from wanderlust import __version__
-from wanderlust.agent.guides import GuideLibrary, index_opener
 from wanderlust.agent.planner import (
     DEFAULT_MAX_STEPS,
     AgentEvent,
     ModelReplied,
-    PlanningAgent,
     PlanningError,
     ToolStarted,
 )
+from wanderlust.agent.setup import build_agent
 from wanderlust.config import MissingAPIKeyError, Settings
 from wanderlust.llm.factory import build_provider, default_model
 from wanderlust.llm.types import Conversation, LLMError
@@ -41,7 +40,7 @@ from wanderlust.streaming import WordWrapper
 from wanderlust.tools.distance import distance_report
 from wanderlust.tools.geocoding import Geocoder, Place
 from wanderlust.tools.http import ToolError
-from wanderlust.tools.registry import build_tools_client, travel_tools
+from wanderlust.tools.registry import build_tools_client
 from wanderlust.tools.weather import WeatherService
 from wanderlust.wikivoyage.client import ArticleNotFoundError, WikivoyageError
 from wanderlust.wikivoyage.models import Article, Section
@@ -670,23 +669,16 @@ def plan(
             print_step(out, event.call, event.result)
 
     try:
-        library = GuideLibrary(
-            index_opener(
-                IndexStore(settings.data_dir),
-                loader,
-                embedder,
-                language=settings.wikivoyage_language,
-                on_build=on_build,
-            )
-        )
-        agent = PlanningAgent(
+        agent = build_agent(
+            settings,
             provider,
-            library,
-            travel_tools(client, language=settings.wikivoyage_language),
+            loader=loader,
+            embedder=embedder,
+            tools_client=client,
             mode=mode,
             max_steps=max_steps,
-            today=lambda: client.clock().date(),
             on_event=on_event,
+            on_build=on_build,
         )
         out.print(
             f"[dim]{escape(provider.name)} · {escape(provider.model)} · "
@@ -712,6 +704,44 @@ def plan(
         typer.echo(plan_json(result))
     else:
         print_itinerary(console, result)
+
+
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
+
+@app.command()
+def serve(
+    host: Annotated[str, typer.Option(help="Address to listen on.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(min=1, max=65535, help="Port to listen on.")] = 8000,
+    open_browser: Annotated[
+        bool, typer.Option("--open", help="Open the planner in your web browser.")
+    ] = False,
+) -> None:
+    """Start the web interface: plan trips in your browser and watch the agent work."""
+    import uvicorn
+
+    from wanderlust.web.app import create_app
+
+    settings = _load_settings()
+    web_app = create_app(settings)
+    url = f"http://{'localhost' if host in LOCAL_HOSTS else host}:{port}"
+    console.print(f"[bold]Wanderlust[/bold] is running at [link={url}]{url}[/link]")
+    if not settings.has_api_key():
+        console.print(
+            "[yellow]No API key is configured, so planning is disabled. "
+            "Add one to .env and restart.[/yellow]"
+        )
+    if host not in LOCAL_HOSTS:
+        console.print(
+            "[yellow]Listening beyond this computer: anyone who can reach this address "
+            "can plan trips with your API key.[/yellow]"
+        )
+    console.print("[dim]Press Ctrl+C to stop.[/dim]")
+    if open_browser:
+        import webbrowser
+
+        webbrowser.open(url)
+    uvicorn.run(web_app, host=host, port=port, log_level="warning")
 
 
 if __name__ == "__main__":  # pragma: no cover

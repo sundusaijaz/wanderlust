@@ -270,9 +270,13 @@ DEMO_ITINERARY = {
 
 
 class DemoPlanner(ScriptedProvider):
-    """Researches with a fixed set of tool calls, then submits DEMO_ITINERARY."""
+    """Researches with a fixed set of tool calls, then submits DEMO_ITINERARY.
 
-    def __init__(self) -> None:
+    ``delay`` pauses before each reply, so the web demo shows the steps arriving.
+    """
+
+    def __init__(self, delay: float = 0.0) -> None:
+        self.delay = delay
         from wanderlust.llm.types import ToolCall
 
         def call(n, name, **arguments):
@@ -304,6 +308,10 @@ class DemoPlanner(ScriptedProvider):
         super().__init__(research, model="demo-model")
 
     def complete(self, conversation, *, tools=None, max_tokens=16000):
+        if self.delay:
+            import time
+
+            time.sleep(self.delay)
         if self.remaining:
             return super().complete(conversation, tools=tools, max_tokens=max_tokens)
         from wanderlust.llm.types import ToolCall

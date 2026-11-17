@@ -72,8 +72,9 @@ flowchart LR
 | Grounded Q&A with citations (`wanderlust ask`) | ✅ Done |
 | Weather, place lookup and distance tools (`wanderlust weather`, `distance`) | ✅ Done |
 | Planning agent with cited itineraries (`wanderlust plan`) | ✅ Done |
-| Web UI | 🚧 Next ([#7](https://github.com/sundusaijaz/wanderlust/issues/7)) |
-| Map view, export, Docker | 📋 Planned ([#8](https://github.com/sundusaijaz/wanderlust/issues/8)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
+| Web interface with live agent activity (`wanderlust serve`) | ✅ Done |
+| Map view | 🚧 Next ([#8](https://github.com/sundusaijaz/wanderlust/issues/8)) |
+| Export, Docker | 📋 Planned ([#9](https://github.com/sundusaijaz/wanderlust/issues/9)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
 
 See the full [roadmap](ROADMAP.md).
 
@@ -125,6 +126,30 @@ uv run wanderlust plan "A weekend in Porto" --json > porto.json                 
    keep runs bounded.
 
 </details>
+
+### Plan in your browser
+
+The same agent with a web interface. Each tool call shows up as it happens,
+and citations link to their sources:
+
+```bash
+uv run wanderlust serve --open        # http://localhost:8000
+```
+
+<p align="center">
+  <img src="docs/assets/web-ui.png" alt="The Wanderlust web interface: a trip request at the top, the agent's guide searches, place lookup and weather check in an activity column, and a three-day itinerary with time-of-day labels, weather, citations and indoor badges" width="820">
+</p>
+
+<sub>Screenshot from the offline demo, a scripted agent planning a trip to the made-up town from the test suite. Try it without an API key: <code>uv run python scripts/demo_server.py</code>.</sub>
+
+- Runs on your computer only (`127.0.0.1`) unless you pass `--host`, and warns
+  you if you do, since anyone who can reach it can plan trips with your key.
+- No front-end build step and no external scripts or fonts: one HTML page, one
+  stylesheet and one script, served by [FastAPI](https://fastapi.tiangolo.com/).
+- Progress arrives as [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
+  Closing the tab or pressing **Stop** cancels the plan, and at most two plans
+  run at once.
+- Everything the model writes is shown as plain text, never as HTML.
 
 ### Read a travel guide
 
@@ -264,6 +289,7 @@ API keys are never printed:
 |---|---|
 | Language | Python 3.11+, managed with [uv](https://docs.astral.sh/uv/) |
 | Command line | [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/) |
+| Web interface | [FastAPI](https://fastapi.tiangolo.com/) and [uvicorn](https://www.uvicorn.org/), plain HTML, CSS and JavaScript |
 | Configuration | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
 | Language models | Official [Anthropic](https://github.com/anthropics/anthropic-sdk-python) and [OpenAI](https://github.com/openai/openai-python) Python SDKs behind one small interface |
 | Travel data | [Wikivoyage](https://www.wikivoyage.org/) via the MediaWiki API, parsed with [mwparserfromhell](https://github.com/earwig/mwparserfromhell) |
@@ -278,6 +304,7 @@ uv run pytest                               # run the tests
 uv run ruff check .                         # lint
 uv run ruff format .                        # format
 uv run python scripts/render_screenshots.py # refresh README screenshots
+uv run python scripts/demo_server.py        # web interface offline, scripted agent
 ```
 
 Work is tracked in [issues](https://github.com/sundusaijaz/wanderlust/issues),
