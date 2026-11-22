@@ -269,6 +269,14 @@ button.secondary { background: transparent; color: var(--text); border: 1px soli
   z-index: 0; /* keep Leaflet's panes below the page's own layers */
 }
 
+/* The offline demo's town is made up, so it gets a plain sea instead of map tiles. */
+.map-canvas.no-tiles {
+  background:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 18%) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 18%) 0 1px, transparent 1px 48px),
+    #9ccbdc;
+}
+
 .map-marker {
   display: grid; place-items: center;
   width: 28px; height: 28px; border-radius: 50%;

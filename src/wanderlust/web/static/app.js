@@ -41,6 +41,7 @@ const result = $("result");
 
 let controller = null;
 let tripMap = null; // the Leaflet map of the current itinerary, if any
+let demoMode = false;
 
 function el(tag, options = {}, ...children) {
   const node = document.createElement(tag);
@@ -76,6 +77,7 @@ async function loadStatus() {
     showNotice(`${status.problem} Add it to your .env file and restart 'wanderlust serve'.`);
     goButton.disabled = true;
   }
+  demoMode = Boolean(status.demo);
   if (status.demo) {
     showNotice("Demo mode: a scripted agent plans a trip to a made-up town, no API key needed.");
   }
@@ -414,7 +416,9 @@ function showItinerary(data) {
   clearMap();
   result.replaceChildren(...parts);
   if (trip) {
-    tripMap = window.WanderlustMap.render(result.querySelector(".map-container"), trip, known);
+    tripMap = window.WanderlustMap.render(result.querySelector(".map-container"), trip, known, {
+      tiles: !demoMode,
+    });
   }
 }
 

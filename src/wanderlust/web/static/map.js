@@ -60,9 +60,10 @@ window.WanderlustMap = (() => {
 
   /**
    * Draw the trip in `container`. `trip` is the plan's "map" payload and `sources`
-   * maps passage numbers to {label, url}. Returns {focus(day, number), destroy()}.
+   * maps passage numbers to {label, url}. With `tiles: false` (the offline demo, whose
+   * town is made up) no map tiles are requested. Returns {focus(day, number), destroy()}.
    */
-  function render(container, trip, sources = new Map()) {
+  function render(container, trip, sources = new Map(), { tiles = true } = {}) {
     const filters = node("div", "map-filters");
     filters.setAttribute("role", "group");
     filters.setAttribute("aria-label", "Show days on the map");
@@ -72,7 +73,12 @@ window.WanderlustMap = (() => {
     container.replaceChildren(filters, canvas);
 
     const map = L.map(canvas, { scrollWheelZoom: false });
-    L.tileLayer(TILES, { maxZoom: 19, attribution: ATTRIBUTION }).addTo(map);
+    if (tiles) {
+      L.tileLayer(TILES, { maxZoom: 19, attribution: ATTRIBUTION }).addTo(map);
+    } else {
+      canvas.classList.add("no-tiles");
+      map.attributionControl.addAttribution("Made-up town: no map tiles");
+    }
 
     const layers = new Map(); // day number -> layer group
     const markers = new Map(); // "day:number" -> marker
