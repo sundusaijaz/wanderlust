@@ -117,7 +117,10 @@ def map_summary(day: MapDay) -> str:
     placed, total = len(day.stops), len(day.stops) + len(day.unplaced)
     if not placed:
         return "no coordinates in the guides for these stops"
-    text = f"{placed} of {total} stops placed" if placed < total else f"all {total} stops placed"
+    if placed < total:
+        text = f"{placed} of {total} stops placed"
+    else:
+        text = "the stop is placed" if total == 1 else f"all {total} stops placed"
     if day.route_km is not None:
         text += f", about {day.route_km:.1f} km apart in a straight line"
     return text
