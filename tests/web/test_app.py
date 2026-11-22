@@ -67,15 +67,24 @@ def test_status_reports_the_model(web):
 def test_index_and_static_files(web):
     page = web.get("/")
     assert page.status_code == 200 and "Wanderlust" in page.text
-    for asset in ("/static/app.js", "/static/app.css", "/static/favicon.svg"):
+    for asset in (
+        "/static/app.js",
+        "/static/app.css",
+        "/static/favicon.svg",
+        "/static/map.js",
+        "/static/vendor/leaflet/leaflet.js",
+        "/static/vendor/leaflet/leaflet.css",
+    ):
         assert asset in page.text
         assert web.get(asset).status_code == 200
     assert web.get("/static/../app.py").status_code == 404
 
 
-def test_page_never_renders_model_text_as_html(web):
-    script = web.get("/static/app.js").text
-    assert ".innerHTML" not in script and "insertAdjacentHTML" not in script
+@pytest.mark.parametrize("script", ["/static/app.js", "/static/map.js"])
+def test_page_never_renders_model_text_as_html(web, script):
+    source = web.get(script).text
+    assert ".innerHTML" not in source and "insertAdjacentHTML" not in source
+    assert "bindPopup(`" not in source  # popups are DOM nodes, not HTML strings
 
 
 def test_plan_streams_progress_then_the_itinerary(web, script):
