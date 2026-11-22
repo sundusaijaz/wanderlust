@@ -7,6 +7,7 @@ from typing import Any
 
 from wanderlust.agent.planner import Plan, Progress
 from wanderlust.agent.prompt import SUBMIT_TOOL
+from wanderlust.agent.trip_map import build_trip_map
 from wanderlust.llm.types import ToolCall, ToolResult
 
 
@@ -70,6 +71,7 @@ def plan_payload(plan: Plan) -> dict[str, Any]:
             {"number": s.number, "label": s.label, "url": s.url, "license": "CC BY-SA 4.0"}
             for s in plan.sources
         ],
+        "map": build_trip_map(plan).to_payload(),
         "model": {"provider": plan.provider, "name": plan.model},
     }
 

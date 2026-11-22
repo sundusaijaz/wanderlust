@@ -73,8 +73,9 @@ flowchart LR
 | Weather, place lookup and distance tools (`wanderlust weather`, `distance`) | ✅ Done |
 | Planning agent with cited itineraries (`wanderlust plan`) | ✅ Done |
 | Web interface with live agent activity (`wanderlust serve`) | ✅ Done |
-| Map view | 🚧 Next ([#8](https://github.com/sundusaijaz/wanderlust/issues/8)) |
-| Export, Docker | 📋 Planned ([#9](https://github.com/sundusaijaz/wanderlust/issues/9)–[#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
+| Map of each day's stops, placed from the guides | ✅ Done |
+| Export (Markdown, PDF, calendar) | 🚧 Next ([#9](https://github.com/sundusaijaz/wanderlust/issues/9)) |
+| Docker and hosted demo | 📋 Planned ([#10](https://github.com/sundusaijaz/wanderlust/issues/10)) |
 
 See the full [roadmap](ROADMAP.md).
 
@@ -130,7 +131,7 @@ uv run wanderlust plan "A weekend in Porto" --json > porto.json                 
 ### Plan in your browser
 
 The same agent with a web interface. Each tool call shows up as it happens,
-and citations link to their sources:
+citations link to their sources, and each day's stops appear on a map:
 
 ```bash
 uv run wanderlust serve --open        # http://localhost:8000
@@ -144,12 +145,21 @@ uv run wanderlust serve --open        # http://localhost:8000
 
 - Runs on your computer only (`127.0.0.1`) unless you pass `--host`, and warns
   you if you do, since anyone who can reach it can plan trips with your key.
-- No front-end build step and no external scripts or fonts: one HTML page, one
-  stylesheet and one script, served by [FastAPI](https://fastapi.tiangolo.com/).
+- No front-end build step and no scripts or fonts loaded from other sites: plain
+  HTML, CSS and JavaScript (plus a bundled copy of Leaflet), served by
+  [FastAPI](https://fastapi.tiangolo.com/).
 - Progress arrives as [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
   Closing the tab or pressing **Stop** cancels the plan, and at most two plans
   run at once.
 - Everything the model writes is shown as plain text, never as HTML.
+
+**The map.** Each stop is placed using the coordinates of the guide listing it
+cites (Wikivoyage listings often have them), never a guess, so every marker is
+backed by the same source as the stop. Stops whose passages have no coordinates
+are listed as not on the map. Markers are numbered and coloured by day and joined
+in visiting order. You can filter by day, a 📍 button next to a stop jumps to
+it, and popups link to the Wikivoyage listing. In the terminal, each day ends
+with how many of its stops were placed and how far apart they are.
 
 ### Read a travel guide
 
@@ -290,6 +300,7 @@ API keys are never printed:
 | Language | Python 3.11+, managed with [uv](https://docs.astral.sh/uv/) |
 | Command line | [Typer](https://typer.tiangolo.com/) and [Rich](https://rich.readthedocs.io/) |
 | Web interface | [FastAPI](https://fastapi.tiangolo.com/) and [uvicorn](https://www.uvicorn.org/), plain HTML, CSS and JavaScript |
+| Maps | [Leaflet](https://leafletjs.com/) (vendored, BSD 2-Clause) with [OpenStreetMap](https://www.openstreetmap.org/) tiles |
 | Configuration | [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) |
 | Language models | Official [Anthropic](https://github.com/anthropics/anthropic-sdk-python) and [OpenAI](https://github.com/openai/openai-python) Python SDKs behind one small interface |
 | Travel data | [Wikivoyage](https://www.wikivoyage.org/) via the MediaWiki API, parsed with [mwparserfromhell](https://github.com/earwig/mwparserfromhell) |
@@ -317,6 +328,12 @@ available under the [Creative Commons Attribution-ShareAlike
 license](https://creativecommons.org/licenses/by-sa/4.0/). Wanderlust fetches it
 at runtime and does not redistribute it in this repository. Generated
 itineraries link to the Wikivoyage articles they draw on.
+
+Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors,
+available under the Open Database License. Tiles are loaded from
+OpenStreetMap's servers under their [tile usage
+policy](https://operations.osmfoundation.org/policies/tiles/), and only when you
+look at a map (the offline demo loads none).
 
 Weather and place data come from [Open-Meteo](https://open-meteo.com/) under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Open-Meteo's free API

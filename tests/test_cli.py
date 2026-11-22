@@ -543,6 +543,7 @@ def test_plan_prints_a_cited_itinerary(fake_guides, semantic, fake_open_meteo, m
     assert "3 model calls, 4 tool calls" in out
     assert "CC BY-SA 4.0" in out and "Open-Meteo" in out
     assert "research the guide first" not in out  # only shown with --verbose
+    assert "Map: " in out  # coordinates depend on which passages were cited
     assert llm.remaining == 0
 
 
@@ -571,6 +572,9 @@ def test_plan_json(fake_guides, semantic, fake_open_meteo, monkeypatch):
     assert [s["number"] for s in payload["sources"]] == [1, 2]
     assert payload["sources"][0]["url"].startswith("https://en.wikivoyage.org/wiki/Examplestad")
     assert payload["model"] == {"provider": "fake", "name": "scripted"}
+    trip_map = payload["map"]
+    assert trip_map["total"] == 2
+    assert all(len(stop) == 7 for day in trip_map["days"] for stop in day["stops"])
 
 
 def test_plan_failure_is_reported(fake_guides, semantic, fake_open_meteo, monkeypatch):

@@ -6,6 +6,7 @@
   <title>Wanderlust: trip planner</title>
   <meta name="description" content="Plan trips with an AI agent grounded in Wikivoyage travel guides.">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
@@ -62,6 +63,8 @@
       (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>).
       Weather and places from <a href="https://open-meteo.com/">Open-Meteo</a>
       (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
+      Maps by <a href="https://leafletjs.com/">Leaflet</a> with
+      <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> data.
       Check prices and opening hours before you go.
     </p>
     <p><a href="https://github.com/sundusaijaz/wanderlust">Wanderlust on GitHub</a> <span id="version"></span></p>
@@ -79,6 +82,8 @@
     </article>
   </template>
 
+  <script src="/static/vendor/leaflet/leaflet.js" defer></script>
+  <script src="/static/map.js" defer></script>
   <script src="/static/app.js" defer></script>
 </body>
 </html>

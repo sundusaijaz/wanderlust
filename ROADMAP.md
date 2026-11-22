@@ -25,7 +25,7 @@ and lands through its own pull request.
 
 - [x] **M8: Web UI.** A chat-style interface that streams the plan as the agent
       works and shows which tools it used.
-- [ ] **M9: Map view.** Plot each day's stops on an interactive map.
+- [x] **M9: Map view.** Plot each day's stops on an interactive map.
 - [ ] **M10: Export.** Save itineraries as Markdown, PDF or calendar (.ics) files.
 - [ ] **M11: Docker and deployment.** One-command local run and a hosted demo.
 

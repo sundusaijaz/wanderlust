@@ -40,6 +40,8 @@ const steps = $("steps");
 const result = $("result");
 
 let controller = null;
+let tripMap = null; // the Leaflet map of the current itinerary, if any
+let demoMode = false;
 
 function el(tag, options = {}, ...children) {
   const node = document.createElement(tag);
@@ -75,6 +77,7 @@ async function loadStatus() {
     showNotice(`${status.problem} Add it to your .env file and restart 'wanderlust serve'.`);
     goButton.disabled = true;
   }
+  demoMode = Boolean(status.demo);
   if (status.demo) {
     showNotice("Demo mode: a scripted agent plans a trip to a made-up town, no API key needed.");
   }
@@ -137,6 +140,7 @@ async function plan(request) {
   steps.replaceChildren();
   $("run-summary").textContent = "";
   $("workspace").hidden = false;
+  clearMap();
   result.replaceChildren(placeholder());
 
   try {
@@ -270,23 +274,31 @@ function formatDate(iso) {
   });
 }
 
-function renderDay(day, known) {
+function renderDay(day, known, mapDay) {
   const card = $("day-template").content.firstElementChild.cloneNode(true);
   const meta = [`Day ${day.day}`];
   if (day.date) meta.push(formatDate(day.date));
   meta.push(day.base);
-  card.querySelector(".day-meta").textContent = meta.join(" · ");
+  const metaLine = card.querySelector(".day-meta");
+  metaLine.textContent = meta.join(" · ");
+  if (mapDay?.stops.length && window.WanderlustMap) {
+    const swatch = el("span", { className: "day-swatch", attrs: { "aria-hidden": "true" } });
+    swatch.style.setProperty("--day-colour", window.WanderlustMap.colour(day.day));
+    metaLine.prepend(swatch);
+  }
   card.querySelector(".day-title").textContent = day.title;
   if (day.weather) {
     const weather = card.querySelector(".weather");
     weather.hidden = false;
     weather.textContent = `${weatherIcon(day.weather)} ${day.weather}`;
   }
+  const placed = new Set((mapDay?.stops || []).map((stop) => stop.number));
   const list = card.querySelector(".stops");
-  for (const stop of day.stops) {
+  day.stops.forEach((stop, index) => {
     const name = el("p", { className: "stop-name", text: stop.name });
     for (const number of stop.sources) name.append(citation(number, known));
     if (stop.indoor) name.append(el("span", { className: "badge", text: "☔ indoor" }));
+    if (placed.has(index + 1)) name.append(locateButton(day.day, index + 1, stop.name));
     list.append(
       el(
         "li",
@@ -294,6 +306,14 @@ function renderDay(day, known) {
         el("span", { className: `when ${stop.time_of_day}`, text: TIMES[stop.time_of_day] }),
         el("div", {}, name, el("p", { className: "stop-text", text: stop.description })),
       ),
+    );
+  });
+  if (mapDay?.route_km) {
+    card.append(
+      el("p", {
+        className: "getting-around muted",
+        text: `🗺️ Mapped stops are about ${mapDay.route_km.toFixed(1)} km apart in a straight line.`,
+      }),
     );
   }
   if (day.getting_around) {
@@ -304,9 +324,45 @@ function renderDay(day, known) {
   return card;
 }
 
+function locateButton(dayNumber, stopNumber, name) {
+  const button = el("button", {
+    className: "locate",
+    text: "📍 map",
+    attrs: { type: "button", "aria-label": `Show ${name} on the map` },
+  });
+  button.addEventListener("click", () => {
+    if (!tripMap) return;
+    $("trip-map").scrollIntoView({ behavior: "smooth", block: "center" });
+    tripMap.focus(dayNumber, stopNumber);
+  });
+  return button;
+}
+
+function mapCard(trip) {
+  const note =
+    trip.placed === trip.total
+      ? `All ${trip.total} stops are placed using coordinates from the guides.`
+      : `${trip.placed} of ${trip.total} stops have coordinates in the guides; ` +
+        "the others are in the day plans below.";
+  return el(
+    "div",
+    { className: "card map-card", attrs: { id: "trip-map" } },
+    el("h2", { text: "Map" }),
+    el("div", { className: "map-container" }),
+    el("p", { className: "map-note muted small", text: note }),
+  );
+}
+
+function clearMap() {
+  tripMap?.destroy();
+  tripMap = null;
+}
+
 function showItinerary(data) {
   const itinerary = data.itinerary;
   const known = new Map(data.sources.map((source) => [source.number, source]));
+  const trip = data.map && data.map.placed > 0 && window.L && window.WanderlustMap ? data.map : null;
+  const mapDays = new Map((trip?.days || []).map((day) => [day.day, day]));
   const parts = [
     el(
       "div",
@@ -314,8 +370,9 @@ function showItinerary(data) {
       el("h2", { text: itinerary.title }),
       el("p", { text: itinerary.summary }),
     ),
-    ...itinerary.days.map((day) => renderDay(day, known)),
   ];
+  if (trip) parts.push(mapCard(trip));
+  parts.push(...itinerary.days.map((day) => renderDay(day, known, mapDays.get(day.day))));
 
   const extras = el("div", { className: "card extras" });
   if (itinerary.tips.length) {
@@ -356,7 +413,13 @@ function showItinerary(data) {
     extras.append(el("p", { className: "muted small", text: "Weather data by Open-Meteo.com." }));
   }
   parts.push(extras);
+  clearMap();
   result.replaceChildren(...parts);
+  if (trip) {
+    tripMap = window.WanderlustMap.render(result.querySelector(".map-container"), trip, known, {
+      tiles: !demoMode,
+    });
+  }
 }
 
 function showError(data) {

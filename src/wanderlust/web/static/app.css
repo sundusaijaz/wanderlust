@@ -248,6 +248,56 @@ button.secondary { background: transparent; color: var(--text); border: 1px soli
 .error-card h2 { margin: 0 0 6px; }
 .error-card p { margin: 4px 0 0; }
 
+/* -- map ----------------------------------------------------------------- */
+
+.map-card h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.map-card .map-note { margin: 10px 0 0; }
+
+.map-filters { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+.map-filter {
+  font-weight: 600; font-size: 0.82rem; padding: 4px 12px; border-radius: 999px;
+  background: transparent; color: var(--text); border: 1px solid var(--border);
+}
+.map-filter::before {
+  content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 6px; vertical-align: 0; background: var(--day-colour, var(--muted));
+}
+.map-filter[aria-pressed="true"] { border-color: var(--accent); background: var(--bg); }
+
+.map-canvas {
+  height: 380px; border-radius: 10px; border: 1px solid var(--border);
+  z-index: 0; /* keep Leaflet's panes below the page's own layers */
+}
+
+/* The offline demo's town is made up, so it gets a plain sea instead of map tiles. */
+.map-canvas.no-tiles {
+  background:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 18%) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 18%) 0 1px, transparent 1px 48px),
+    #9ccbdc;
+}
+
+.map-marker {
+  display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--day-colour, var(--violet)); color: #fff;
+  border: 2px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 35%);
+  font: 700 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.map-popup { display: grid; gap: 2px; font: 14px/1.4 system-ui, -apple-system, sans-serif; }
+.map-popup-when { color: #6a6582; font-size: 12px; }
+
+.locate {
+  margin-left: 6px; padding: 0 6px; border-radius: 6px; font-size: 0.8rem; font-weight: 500;
+  background: transparent; color: var(--link); border: 1px solid var(--border);
+  vertical-align: 2px;
+}
+.day-swatch {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  margin-right: 6px; vertical-align: 1px; background: var(--day-colour);
+}
+
 /* -- footer -------------------------------------------------------------- */
 
 .footer {

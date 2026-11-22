@@ -15,6 +15,7 @@ from wanderlust.agent.describe import (
 from wanderlust.agent.itinerary import DayPlan, TimeOfDay
 from wanderlust.agent.planner import Plan
 from wanderlust.agent.prompt import SUBMIT_TOOL
+from wanderlust.agent.trip_map import MapDay, build_trip_map
 from wanderlust.llm.types import ToolCall, ToolResult
 
 __all__ = [
@@ -55,8 +56,9 @@ def print_itinerary(console: Console, plan: Plan) -> None:
     itinerary = plan.itinerary
     console.print(f"\n[bold magenta]{escape(itinerary.title)}[/bold magenta]")
     console.print(escape(itinerary.summary), highlight=False)
-    for day in itinerary.days:
-        _print_day(console, day)
+    trip_map = build_trip_map(plan)
+    for day, map_day in zip(itinerary.days, trip_map.days, strict=True):
+        _print_day(console, day, map_day)
 
     if itinerary.tips:
         console.print("\n[bold]Tips[/bold]")
@@ -80,7 +82,7 @@ def print_itinerary(console: Console, plan: Plan) -> None:
         console.print("[dim]Weather data by Open-Meteo.com, CC BY 4.0.[/dim]")
 
 
-def _print_day(console: Console, day: DayPlan) -> None:
+def _print_day(console: Console, day: DayPlan, map_day: MapDay | None = None) -> None:
     heading = f"Day {day.day}"
     if day.date:
         heading += f" · {day.date.strftime('%a %d %b %Y')}"
@@ -106,6 +108,22 @@ def _print_day(console: Console, day: DayPlan) -> None:
     console.print(table)
     if day.getting_around:
         console.print(f"  [dim]Getting around:[/dim] {escape(day.getting_around)}", highlight=False)
+    if map_day is not None:
+        console.print(f"  [dim]Map: {escape(map_summary(map_day))}[/dim]", highlight=False)
+
+
+def map_summary(day: MapDay) -> str:
+    """e.g. '2 of 3 stops placed, about 2.6 km apart in a straight line'."""
+    placed, total = len(day.stops), len(day.stops) + len(day.unplaced)
+    if not placed:
+        return "no coordinates in the guides for these stops"
+    if placed < total:
+        text = f"{placed} of {total} stops placed"
+    else:
+        text = "the stop is placed" if total == 1 else f"all {total} stops placed"
+    if day.route_km is not None:
+        text += f", about {day.route_km:.1f} km apart in a straight line"
+    return text
 
 
 def _run_summary(plan: Plan) -> str:
