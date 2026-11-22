@@ -128,3 +128,20 @@ def test_payload_is_plain_data():
     }
     assert payload["placed"] == 2 and payload["total"] == 2
     assert payload["bounds"] == ((38.6916, -9.216), (38.7139, -9.1394))
+
+
+def test_map_summaries_for_the_terminal():
+    from wanderlust.plan_view import map_summary
+
+    plan = make_plan(
+        [
+            ([stop("morning", "Rossio", 1), stop("evening", "Belém", 3)], {}),
+            ([stop("morning", "Rossio", 1), stop("evening", "Walk", 2)], {}),
+            ([stop("morning", "Walk", 2)], {}),
+        ],
+        SOURCES,
+    )
+    first, second, third = build_trip_map(plan).days
+    assert map_summary(first) == "all 2 stops placed, about 7.1 km apart in a straight line"
+    assert map_summary(second) == "1 of 2 stops placed"
+    assert map_summary(third) == "no coordinates in the guides for these stops"

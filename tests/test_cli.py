@@ -543,6 +543,7 @@ def test_plan_prints_a_cited_itinerary(fake_guides, semantic, fake_open_meteo, m
     assert "3 model calls, 4 tool calls" in out
     assert "CC BY-SA 4.0" in out and "Open-Meteo" in out
     assert "research the guide first" not in out  # only shown with --verbose
+    assert "Map: " in out  # coordinates depend on which passages were cited
     assert llm.remaining == 0
 
 
