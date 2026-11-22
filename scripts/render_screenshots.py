@@ -35,8 +35,9 @@ DEMO_ANSWER = (
     "prices can change, so check before you go."
 )
 
-# Made-up guide from the test suite, so screenshots never reproduce Wikivoyage text.
-DEMO_ARTICLE = ROOT / "tests" / "fixtures" / "examplestad.wikitext"
+# A made-up guide (the test fixture with every listing given coordinates in the open
+# Atlantic), so screenshots never reproduce Wikivoyage text or put fiction on real land.
+DEMO_ARTICLE = ROOT / "scripts" / "demo" / "examplestad.wikitext"
 
 # Placeholder values only: the screenshot shows "configured", never the key itself.
 DEMO_ENV = {
@@ -101,15 +102,15 @@ class DemoEmbedder:
 DEMO_PLACES = {
     "examplestad": {
         "name": "Examplestad",
-        "latitude": 12.34,
-        "longitude": -7.65,
+        "latitude": 31.40,
+        "longitude": -41.20,
         "country": "Imaginaria",
         "admin1": "Coast Province",
     },
     "otherville": {
         "name": "Otherville",
-        "latitude": 12.5,
-        "longitude": -7.5,
+        "latitude": 31.55,
+        "longitude": -41.02,
         "country": "Imaginaria",
         "admin1": "Coast Province",
     },
@@ -298,8 +299,8 @@ class DemoPlanner(ScriptedProvider):
                 call(
                     5,
                     "get_weather",
-                    latitude=12.34,
-                    longitude=-7.65,
+                    latitude=31.40,
+                    longitude=-41.20,
                     start_date="2026-11-13",
                     end_date="2026-11-15",
                 ),
